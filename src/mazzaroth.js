@@ -1,3 +1,8 @@
+/**
+ * CLI tool that wraps the mazzaroth-js node and contract clients that
+ * facilitates interaction with a Mazzaroth node. Gives access to both the raw
+ * node rpc endpoints and abstracted access to the contract on a given Node.
+*/
 import path from 'path'
 import { NodeClient, ContractClient } from 'mazzaroth-js'
 import ContractIO from './contract-io.js'
@@ -6,6 +11,18 @@ import fs from 'fs'
 
 const defaultChannel = '0'.repeat(64)
 
+/**
+ * Many of the node client commands have similar options. This just wraps the
+ * the common logic for these commands.
+ *
+ * @param command Name of the command in the cli i.e. 'nonce-lookup'
+ * @param desc Description of the command
+ * @param opts Any additional options beyond host and priv_key
+ * @param action Function that is the actual logic for the specific command,
+ *               accepts the '<val>', options, and constructed client as args.
+ *
+ * @return none
+*/
 const clientCommand = (command, desc, opts, action) => {
   let cmd = program.command(`${command} <val>`)
   cmd.description(desc)
@@ -28,6 +45,8 @@ const clientCommand = (command, desc, opts, action) => {
   })
 }
 
+// Additional options for a 'transaction' type command. Used by any non-readonly
+// transactions.
 const transactionOptions = [
   [
     '-c --channel_id <s>',
@@ -43,6 +62,8 @@ const transactionOptions = [
   ]
 ]
 
+// Used for transaction-call cli command, which specifically calls write
+// functions on the contract. This requires function arguments.
 const callArgs = []
 const callOptions = [
   [
@@ -146,6 +167,7 @@ clientCommand('contract-update', contractUpdateDesc, transactionOptions,
     })
   })
 
+// Command option specific to the granting/revoking of permission.
 const permOptions = [
   [
     '-p --perm_type <args>',
@@ -208,6 +230,16 @@ clientCommand('transaction-lookup', transactionLookupDesc, [],
       })
   })
 
+/**
+ * block-lookup and block-header-lookup are so similar that I made a function
+ * that handles both.
+ *
+ * @param lookupFunc Function name on the node client
+ * @param cmd CLI command for the function.
+ * @param desc We need 'Block' or 'Block Header' in the description.
+ *
+ * @return none
+*/
 function blockLookupCommand (lookupFunc, cmd, desc) {
   const blockLookupDesc = `
 Looks up a ${desc} using either a block ID as hex or block Number.
