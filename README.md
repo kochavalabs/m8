@@ -1,4 +1,5 @@
 # Mazzaroth-CLI
+[![CircleCI](https://circleci.com/gh/kochavalabs/mazzaroth-cli.svg?style=svg)](https://circleci.com/gh/kochavalabs/mazzaroth-cli)
 
 A node CLI tool that wraps the [mazzaroth-js](https://github.com/kochavalabs/mazzaroth-js)
 node/contract clients and facilitates interaction with a Mazzaroth node. Gives
