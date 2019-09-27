@@ -41,9 +41,9 @@
   "dependencies": {
     "commander": "^2.19.0",
     "debug": "^4.1.1",
-    "xdr-js-serialize": "develop",
-    "mazzaroth-js": "develop",
-    "mazzaroth-xdr": "develop",
-    "nearley": "^2.16.0"
+    "mazzaroth-js": "0.1.0-alpha2",
+    "mazzaroth-xdr": "0.1.0-alpha",
+    "nearley": "^2.16.0",
+    "xdr-js-serialize": "0.1.0-alpha"
   }
 }
