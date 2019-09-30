@@ -1,6 +1,6 @@
 {
   "name": "mazzaroth-cli",
-  "version": "0.2.3",
+  "version": "0.1.0",
   "description": "Tool that wraps the mazzaroth-js node/contract clients and facilitates interaction with a Mazzaroth node.",
   "main": "dist/mazzaroth.js",
   "files": [
