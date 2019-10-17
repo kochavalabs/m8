@@ -8,8 +8,7 @@ import { NodeClient, ContractClient, ReceiptSubscribe, XDRtoJSON, JSONtoXDR } fr
 import ContractIO from './contract-io.js'
 import program from 'commander'
 import fs from 'fs'
-import { sha3_256 as sha3256 } from 'js-sha3'
-require('app-module-path').addPath(path.resolve(`${__dirname}/../node_modules`))
+import { Schema } from 'mazzaroth-xdr'
 
 const defaultChannel = '0'.repeat(64)
 const defaultAddr = 'http://localhost:8081'
@@ -134,11 +133,10 @@ clientCommand('readonly-call', readonlyCallDesc, transactionOptions.concat(callO
       })
   })
 
-// Version of the contract being deployed
-const conOptions = [
+const updateOptions = [
   [
-    '-v --contract_version <args>',
-    'version number for the contract'
+    '-s --schema <schema>',
+    'File path to a binary representation of the contract schema.'
   ]
 ]
 
@@ -148,23 +146,31 @@ to a file containing contract wasm bytes.
 (https://github.com/kochavalabs/mazzaroth-xdr)
 
 Examples:
-  mazzaroth-cli contract-update ./test/data/hello_world.wasm
+  mazzaroth-cli contract-update ./test/data/hello_world.wasm --schema ./schema.xdr
 `
-clientCommand('contract-update', contractUpdateDesc, transactionOptions.concat(conOptions),
+clientCommand('contract-update', contractUpdateDesc, transactionOptions.concat(updateOptions),
   (val, options, client) => {
     fs.readFile(val, (err, data) => {
+      let schemaObj = {
+        tables: []
+      }
+      if (options.schema != null) {
+        try {
+          const schemaData = fs.readFileSync(options.schema)
+          schemaObj = Schema().fromXDR(schemaData).toJSON()
+        } catch (err) {
+          console.log(err)
+          return
+        }
+      }
       const action = {
         channelID: options.channel_id || defaultChannel,
         nonce: (options.nonce || Math.floor(Math.random() * Math.floor(1000000000))).toString(),
         category: {
           enum: 2,
           value: {
-            enum: 1,
-            value: {
-              contractBytes: data.toString('base64'),
-              contractHash: sha3256.create().update(data.buffer).hex(),
-              version: options.contract_version || '0.1.0'
-            }
+            contract: data.toString('base64'),
+            schema: schemaObj
           }
         }
       }
