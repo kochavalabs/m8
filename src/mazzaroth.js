@@ -8,6 +8,7 @@ import { NodeClient, ContractClient } from 'mazzaroth-js'
 import ContractIO from './contract-io.js'
 import program from 'commander'
 import fs from 'fs'
+import { Schema } from 'mazzaroth-xdr'
 
 const defaultChannel = '0'.repeat(64)
 
@@ -132,24 +133,44 @@ clientCommand('readonly-call', readonlyCallDesc, transactionOptions.concat(callO
       })
   })
 
+const updateOptions = [
+  [
+    '-s --schema <schema>',
+    'File path to a binary representation of the contract schema.'
+  ]
+]
+
 const contractUpdateDesc = `
 Submits an update transaction to a mazzaroth node. The format of <val> is a path
 to a file containing contract wasm bytes.
 (https://github.com/kochavalabs/mazzaroth-xdr)
 
 Examples:
-  mazzaroth-cli contract-update ./test/data/hello_world.wasm
+  mazzaroth-cli contract-update ./test/data/hello_world.wasm --schema ./schema.xdr
 `
-clientCommand('contract-update', contractUpdateDesc, transactionOptions,
+clientCommand('contract-update', contractUpdateDesc, transactionOptions.concat(updateOptions),
   (val, options, client) => {
     fs.readFile(val, (err, data) => {
+      let schemaObj = {
+        tables: []
+      }
+      if (options.schema != null) {
+        try {
+          const schemaData = fs.readFileSync(options.schema)
+          schemaObj = Schema().fromXDR(schemaData).toJSON()
+        } catch (err) {
+          console.log(err)
+          return
+        }
+      }
       const action = {
         channelID: options.channel_id || defaultChannel,
         nonce: (options.nonce || Math.floor(Math.random() * Math.floor(1000000000))).toString(),
         category: {
           enum: 2,
           value: {
-            contract: data.toString('base64')
+            contract: data.toString('base64'),
+            schema: schemaObj
           }
         }
       }
