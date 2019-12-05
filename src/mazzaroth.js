@@ -144,6 +144,14 @@ clientCommand('readonly-call', readonlyCallDesc, transactionOptions.concat(callO
       })
   })
 
+// Version of the contract being deployed
+const conOptions = [
+  [
+    '-v --version <args>',
+    'version number for the contract'
+  ]
+]
+
 const contractUpdateDesc = `
 Submits an update transaction to a mazzaroth node. The format of <val> is a path
 to a file containing contract wasm bytes.
@@ -152,7 +160,7 @@ to a file containing contract wasm bytes.
 Examples:
   mazzaroth-cli contract-update ./test/data/hello_world.wasm
 `
-clientCommand('contract-update', contractUpdateDesc, transactionOptions,
+clientCommand('contract-update', contractUpdateDesc, transactionOptions.concat(conOptions),
   (val, options, client) => {
     fs.readFile(val, (err, data) => {
       const action = {
@@ -161,7 +169,11 @@ clientCommand('contract-update', contractUpdateDesc, transactionOptions,
         category: {
           enum: 2,
           value: {
-            contract: data.toString('base64')
+            enum: 1,
+            value: {
+              contract: data.toString('base64'),
+              version: options.version || '0.1.0'
+            }
           }
         }
       }
