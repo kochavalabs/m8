@@ -370,7 +370,6 @@ Examples:
 `
 clientCommand('channel-lookup', channelLookupDesc, [],
   (val, options, client) => {
-    client.publicKey = Buffer.from(val, 'hex')
     const valLookup = { 'contract': 1, 'config': 2 }
     client.contractInfoLookup(valLookup[val]).then(res => {
       console.log(res.toJSON())
