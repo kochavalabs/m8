@@ -345,6 +345,33 @@ clientCommand('account-lookup', accountLookupDesc, [],
       })
   })
 
+const channelLookupDesc = `
+Looks up the current information for a channel, Val is what specifically to
+lookup about the channel. Current options:
+
+'config': ContractChannelConfig
+'contract': Contract (bytes and version)
+
+
+Examples:
+  mazzaroth-cli channel-lookup config
+`
+clientCommand('channel-lookup', channelLookupDesc, [],
+  (val, options, client) => {
+    client.publicKey = Buffer.from(val, 'hex')
+    const valLookup = { 'contract': 1, 'config': 2 }
+    client.contractInfoLookup(valLookup[val]).then(res => {
+      console.log(res.toJSON())
+    })
+      .catch(error => {
+        if (error.response) {
+          console.log(error.response.data)
+        } else {
+          console.log(error)
+        }
+      })
+  })
+
 const cliOptions = [
   [
     '-x --xdr_types <s>',
