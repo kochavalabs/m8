@@ -365,7 +365,7 @@ Examples:
 clientCommand('channel-lookup', channelLookupDesc, [],
   (val, options, client) => {
     const valLookup = { 'contract': 1, 'config': 2 }
-    client.contractInfoLookup(valLookup[val]).then(res => {
+    client.channelInfoLookup(valLookup[val]).then(res => {
       console.log(res.toJSON())
     })
       .catch(error => {
