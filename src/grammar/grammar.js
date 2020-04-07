@@ -40,7 +40,7 @@ var grammar = {
     {"name": "__", "symbols": [/[\s]/]},
     {"name": "__", "symbols": ["__", /[\s]/], "postprocess": function() {}},
     {"name": "fileSpecifier$string$1", "symbols": [{"literal":"f"}, {"literal":":"}], "postprocess": function joiner(d) {return d.join('');}},
-    {"name": "fileSpecifier", "symbols": ["fileSpecifier$string$1", "string"], "postprocess": function(d) {return {type: 'file', value: d[1]}; }},
+    {"name": "fileSpecifier", "symbols": ["fileSpecifier$string$1", "string"], "postprocess": function(d) {return {_type: 'file', value: d[1]}; }},
     {"name": "arg$string$1", "symbols": [{"literal":"t"}, {"literal":"r"}, {"literal":"u"}, {"literal":"e"}], "postprocess": function joiner(d) {return d.join('');}},
     {"name": "arg", "symbols": ["arg$string$1"], "postprocess": function(d) { return true; }},
     {"name": "arg$string$2", "symbols": [{"literal":"f"}, {"literal":"a"}, {"literal":"l"}, {"literal":"s"}, {"literal":"e"}], "postprocess": function joiner(d) {return d.join('');}},
