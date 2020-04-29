@@ -4,7 +4,7 @@
  * node rpc endpoints and abstracted access to the contract on a given Node.
 */
 import path from 'path'
-import { NodeClient, ContractClient } from 'mazzaroth-js'
+import { NodeClient, ContractClient, ReceiptSubscribe } from 'mazzaroth-js'
 import ContractIO from './contract-io.js'
 import program from 'commander'
 import fs from 'fs'
@@ -412,6 +412,23 @@ clientCommand('contract-cli', contractCliDesc, cliOptions,
 
 program.on('command:*', function (command) {
   program.help()
+})
+
+const subCmd = program.command('subscribe [val]')
+const subCmdDescription = `
+Subscribes to the receipts received by a readonly/standalone node.
+
+Examples:
+  mazzaroth-cli subscribe '{"receiptFilter": {}, "transactionFilter": {"configFilter":{}}}'
+`
+subCmd.description(subCmdDescription).option('-h --host <s>', 'Web address of the host node default: "localhost:8081"')
+subCmd.action(function (val, options) {
+  options.host = options.host || 'localhost:8081'
+  val = val || '{}'
+  ReceiptSubscribe(options.host, JSON.parse(val), (result) => { console.log(result) })
+  process.stdin.setRawMode(true)
+  process.stdin.resume()
+  process.stdin.on('data', process.exit.bind(process, 0))
 })
 
 program.parse(process.argv)
