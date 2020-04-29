@@ -536,4 +536,21 @@ program.on('command:*', function (command) {
   program.help()
 })
 
+const subCmd = program.command('subscribe [val]')
+const subCmdDescription = `
+Subscribes to the receipts received by a readonly/standalone node.
+
+Examples:
+  mazzaroth-cli subscribe '{"receiptFilter": {}, "transactionFilter": {"configFilter":{}}}'
+`
+subCmd.description(subCmdDescription).option('-h --host <s>', 'Web address of the host node default: "localhost:8081"')
+subCmd.action(function (val, options) {
+  options.host = options.host || 'localhost:8081'
+  val = val || '{}'
+  ReceiptSubscribe(options.host, JSON.parse(val), (result) => { console.log(result) })
+  process.stdin.setRawMode(true)
+  process.stdin.resume()
+  process.stdin.on('data', process.exit.bind(process, 0))
+})
+
 program.parse(process.argv)
