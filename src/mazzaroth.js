@@ -4,7 +4,7 @@
  * node rpc endpoints and abstracted access to the contract on a given Node.
 */
 import path from 'path'
-import { NodeClient, ContractClient, ReceiptSubscribe, XDRtoJSON, JSONtoXDR } from 'mazzaroth-js'
+import { NodeClient, ContractClient, ReceiptSubscribe } from 'mazzaroth-js'
 import ContractIO from './contract-io.js'
 import program from 'commander'
 import fs from 'fs'
@@ -573,16 +573,21 @@ program.on('command:*', function (command) {
   program.help()
 })
 
-if (process.stdin.isTTY) {
-  program.parse(process.argv)
-} else {
-  process.stdin.on('readable', function () {
-    var chunk = this.read()
-    if (chunk !== null) {
-      stdin += chunk
-    }
-  })
-  process.stdin.on('end', function () {
-    program.parse(process.argv)
-  })
-}
+const subCmd = program.command('subscribe [val]')
+const subCmdDescription = `
+Subscribes to the receipts received by a readonly/standalone node.
+
+Examples:
+  mazzaroth-cli subscribe '{"receiptFilter": {}, "transactionFilter": {"configFilter":{}}}'
+`
+subCmd.description(subCmdDescription).option('-h --host <s>', 'Web address of the host node default: "localhost:8081"')
+subCmd.action(function (val, options) {
+  options.host = options.host || 'localhost:8081'
+  val = val || '{}'
+  ReceiptSubscribe(options.host, JSON.parse(val), (result) => { console.log(result) })
+  process.stdin.setRawMode(true)
+  process.stdin.resume()
+  process.stdin.on('data', process.exit.bind(process, 0))
+})
+
+program.parse(process.argv)
