@@ -10,6 +10,17 @@ import program from 'commander'
 import fs from 'fs'
 
 const defaultChannel = '0'.repeat(64)
+const defaultAddr = 'http://localhost:8081'
+const defaultOwner = '3b6a27bcceb6a42d62a3a8d02a6f0d73653215771de243a63ac048a18b59da29'
+const defaultSender = '0'.repeat(64)
+
+/**
+ * Helper function to sleep for a specified number of ms.
+ *
+*/
+function sleep (ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
 
 /**
  * Many of the node client commands have similar options. This just wraps the
@@ -39,7 +50,7 @@ const clientCommand = (command, desc, opts, action) => {
     }
   }
   cmd.action(function (val, options) {
-    options.host = options.host || 'http://localhost:8081'
+    options.host = options.host || defaultAddr
     const client = new NodeClient(options.host, options.priv_key)
     action(val, options, client)
   })
@@ -410,10 +421,6 @@ clientCommand('contract-cli', contractCliDesc, cliOptions,
     })
   })
 
-program.on('command:*', function (command) {
-  program.help()
-})
-
 const subCmd = program.command('subscribe [val]')
 const subCmdDescription = `
 Subscribes to the receipts received by a readonly/standalone node.
@@ -429,6 +436,94 @@ subCmd.action(function (val, options) {
   process.stdin.setRawMode(true)
   process.stdin.resume()
   process.stdin.on('data', process.exit.bind(process, 0))
+})
+
+const deployCmd = program.command('deploy <val>')
+const deployCmdDescription = `
+Helper for deploying a contract to a mazzaroth network. Takes a json config file, a sample config file can be found at https://github.com/kochavalabs/mazzaroth-js/blob/develop/example_deploy.json
+
+Examples:
+  mazzaroth-cli deploy ./example_deploy.json
+`
+
+deployCmd.description(deployCmdDescription)
+deployCmd.action(async function (configPath) {
+  const config = JSON.parse(fs.readFileSync(configPath))
+  const channel = defaultChannel || config['channel-id']
+  const host = defaultAddr || config['node-addr']
+  const wasmFile = fs.readFileSync(config['contract'])
+  const action = {
+    channelID: channel,
+    nonce: '1',
+    category: {
+      enum: 2,
+      value: {
+        enum: 1,
+        value: {
+          contract: wasmFile.toString('base64'),
+          version: '0.1'
+        }
+      }
+    }
+  }
+
+  const configAction = {
+    channelID: channel,
+    nonce: '0',
+    category: {
+      enum: 2,
+      value: {
+        enum: 2,
+        value: {
+          channelID: channel,
+          contractHash: '0'.repeat(64),
+          version: '',
+          owner: defaultOwner,
+          channelName: '',
+          admins: []
+        }
+      }
+    }
+  }
+
+  const owner = config['owner'] || defaultSender
+  const client = new NodeClient(host, owner)
+  await client.transactionSubmit(configAction)
+  await sleep(300)
+  await client.transactionSubmit(action)
+  await sleep(300)
+  const abiConf = config['abi']
+  let abi = abiConf['value']
+  if (abiConf['type'] === 'file') {
+    abi = JSON.parse(fs.readFileSync(abiConf['value']))
+  }
+  let xdrTypes = {}
+  if (config['xdr-types']) {
+    xdrTypes = require(path.resolve(config['xdr-types']))
+  }
+  const testSets = config['test-sets']
+  for (const setName in testSets) {
+    const testSet = config['test-sets'][setName]
+    for (const testIndex in testSet) {
+      const test = testSet[testIndex]
+      const sender = test['sender'] || defaultSender
+      const client = new NodeClient(host, sender)
+      const contractClient = new ContractClient(abi, client, xdrTypes, channel)
+      const functionName = test['function_name']
+      const result = await contractClient[functionName](...test['args'].map(x => {
+        if (typeof x === 'object' && x !== null) {
+          return JSON.stringify(x)
+        }
+        return x
+      }))
+      console.log(`Transaction run: ${functionName}`)
+      console.log(`Result: ${JSON.stringify(result)}`)
+    }
+  }
+})
+
+program.on('command:*', function (command) {
+  program.help()
 })
 
 program.parse(process.argv)
