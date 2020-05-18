@@ -13,6 +13,7 @@ const defaultChannel = '0'.repeat(64)
 const defaultAddr = 'http://localhost:8081'
 const defaultOwner = '3b6a27bcceb6a42d62a3a8d02a6f0d73653215771de243a63ac048a18b59da29'
 const defaultSender = '0'.repeat(64)
+const defaultVersion = '0.1'
 
 /**
  * Helper function to sleep for a specified number of ms.
@@ -487,23 +488,11 @@ Examples:
 deployCmd.description(deployCmdDescription)
 deployCmd.action(async function (configPath) {
   const config = JSON.parse(fs.readFileSync(configPath))
-  const channel = defaultChannel || config['channel-id']
-  const host = defaultAddr || config['node-addr']
+  const channel = config['channel-id'] || defaultChannel
+  const host = config['node-addr'] || defaultAddr
+  const version = config['contract-version'] || defaultVersion
+  const owner = config['owner'] || defaultOwner
   const wasmFile = fs.readFileSync(config['contract'])
-  const action = {
-    channelID: channel,
-    nonce: '1',
-    category: {
-      enum: 2,
-      value: {
-        enum: 1,
-        value: {
-          contract: wasmFile.toString('base64'),
-          version: '0.1'
-        }
-      }
-    }
-  }
 
   const configAction = {
     channelID: channel,
@@ -516,7 +505,7 @@ deployCmd.action(async function (configPath) {
           channelID: channel,
           contractHash: '0'.repeat(64),
           version: '',
-          owner: defaultOwner,
+          owner: owner,
           channelName: '',
           admins: []
         }
@@ -524,8 +513,23 @@ deployCmd.action(async function (configPath) {
     }
   }
 
-  const owner = config['owner'] || defaultSender
-  const client = new NodeClient(host, owner)
+  const action = {
+    channelID: channel,
+    nonce: '1',
+    category: {
+      enum: 2,
+      value: {
+        enum: 1,
+        value: {
+          contract: wasmFile.toString('base64'),
+          version: version
+        }
+      }
+    }
+  }
+
+  const sender = config['sender'] || defaultSender
+  const client = new NodeClient(host, sender)
   await client.transactionSubmit(configAction)
   await sleep(300)
   await client.transactionSubmit(action)
@@ -539,16 +543,16 @@ deployCmd.action(async function (configPath) {
   if (config['xdr-types']) {
     xdrTypes = require(path.resolve(config['xdr-types']))
   }
-  const testSets = config['test-sets']
-  for (const setName in testSets) {
-    const testSet = config['test-sets'][setName]
-    for (const testIndex in testSet) {
-      const test = testSet[testIndex]
-      const sender = test['sender'] || defaultSender
+  const transactions = config['init-transactions']
+  for (const txName in transactions) {
+    const txSet = config['init-transactions'][txName]
+    for (const txIndex in txSet) {
+      const tx = txSet[txIndex]
+      const sender = tx['sender'] || defaultSender
       const client = new NodeClient(host, sender)
       const contractClient = new ContractClient(abi, client, xdrTypes, channel)
-      const functionName = test['function_name']
-      const result = await contractClient[functionName](...test['args'].map(x => {
+      const functionName = tx['function_name']
+      const result = await contractClient[functionName](...tx['args'].map(x => {
         if (typeof x === 'object' && x !== null) {
           return JSON.stringify(x)
         }
