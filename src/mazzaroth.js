@@ -486,12 +486,16 @@ Examples:
 `
 
 deployCmd.description(deployCmdDescription)
-deployCmd.action(async function (configPath) {
+  .option('-h --host <s>',
+    'Web address of the host node default: "http://localhost:8081"')
+deployCmd.action(async function (configPath, options) {
   const config = JSON.parse(fs.readFileSync(configPath))
   const channel = config['channel-id'] || defaultChannel
-  const host = config['node-addr'] || defaultAddr
   const version = config['contract-version'] || defaultVersion
   const owner = config['owner'] || defaultOwner
+  let host = options.host || config['host']
+  host = host || defaultAddr
+
   const wasmFile = fs.readFileSync(config['contract'])
 
   const configAction = {
