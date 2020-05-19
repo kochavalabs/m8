@@ -445,10 +445,10 @@ const deployCmd = program.command('deploy <val>')
 const deployCmdDescription = `
 Helper for deploying a contract to a mazzaroth network. Takes a json config file,
 a sample config file can be found at
-https://github.com/kochavalabs/full-contract-example/blob/master/example_deploy.json
+https://github.com/kochavalabs/full-contract-example/blob/master/deploy.json
 
 Examples:
-  mazzaroth-cli deploy ./example_deploy.json
+  mazzaroth-cli deploy ./deploy.json
 `
 
 deployCmd.description(deployCmdDescription)
