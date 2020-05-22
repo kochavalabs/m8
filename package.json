@@ -39,11 +39,12 @@
     "package-tagger": "^0.1.1"
   },
   "dependencies": {
+    "app-module-path": "^2.2.0",
     "commander": "^2.19.0",
     "debug": "^4.1.1",
-    "xdr-js-serialize": "develop",
     "mazzaroth-js": "develop",
     "mazzaroth-xdr": "develop",
-    "nearley": "^2.16.0"
+    "nearley": "^2.16.0",
+    "xdr-js-serialize": "develop"
   }
 }
