@@ -8,6 +8,7 @@ import { NodeClient, ContractClient, ReceiptSubscribe } from 'mazzaroth-js'
 import ContractIO from './contract-io.js'
 import program from 'commander'
 import fs from 'fs'
+require('app-module-path').addPath(path.resolve(`${__dirname}/../node_modules`))
 
 const defaultChannel = '0'.repeat(64)
 const defaultAddr = 'http://localhost:8081'

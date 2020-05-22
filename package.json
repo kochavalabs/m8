@@ -44,9 +44,9 @@
     "app-module-path": "^2.2.0",
     "commander": "^2.19.0",
     "debug": "^4.1.1",
-    "mazzaroth-js": "^0.2.3",
-    "mazzaroth-xdr": "^0.2.3",
+    "mazzaroth-js": "develop",
+    "mazzaroth-xdr": "develop",
     "nearley": "^2.16.0",
-    "xdr-js-serialize": "^0.2.0"
+    "xdr-js-serialize": "develop"
   }
 }
