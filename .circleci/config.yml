@@ -44,6 +44,9 @@ jobs:
       - run:
           name: lint
           command: npm run lint
+      - run:
+          name: test
+          command: npm test
 
   publish-dev:
     executor: node-latest
@@ -69,7 +72,7 @@ jobs:
           key: git-sha-{{ .Revision }}{{ .Branch }}
       - run:
           name: setup git config
-          command: git config user.email "dev@mazzaroth.io" && git config user.name "CircleCI" && git config --global core.editor "\usr\local\bin\subl -n -w"
+          command: git config user.email "dev@mazzaroth.io" && git config user.name "CricleCI" && git config --global core.editor "\usr\local\bin\subl -n -w"
       - run:
           name: update version
           command: echo $CIRCLE_BRANCH | sed 's:release/::' | xargs npm version --no-git-tag-version
