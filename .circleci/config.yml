@@ -44,9 +44,6 @@ jobs:
       - run:
           name: lint
           command: npm run lint
-      - run:
-          name: test
-          command: npm test
 
   publish-dev:
     executor: node-latest
