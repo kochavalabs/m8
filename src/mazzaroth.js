@@ -4,7 +4,7 @@
  * node rpc endpoints and abstracted access to the contract on a given Node.
 */
 import path from 'path'
-import { NodeClient, ContractClient, ReceiptSubscribe } from 'mazzaroth-js'
+import { NodeClient, ContractClient, ReceiptSubscribe, XDRtoJSON, JSONtoXDR } from 'mazzaroth-js'
 import ContractIO from './contract-io.js'
 import program from 'commander'
 import fs from 'fs'
@@ -535,8 +535,45 @@ deployCmd.action(async function (configPath, options) {
   }
 })
 
+var stdin = ''
+const xdrCmd = program.command('xdr <type> [input]')
+const xdrCmdDescription = `
+Command used for converting between JSON and base64 representations of xdr
+objects. Also can be piped to from stdin.
+
+Examples:
+  mazzaroth-cli xdr Transaction '{"action": { "nonce": "3" } }'
+  echo '{"action": { "nonce": "3" } }' | mazzaroth-cli xdr Transaction
+`
+
+xdrCmd.description(xdrCmdDescription)
+  .option('-i --inputType <s>',
+    'Input type to convert from, defaults to JSON other option is base64')
+xdrCmd.action(async function (type, input, options) {
+  if (stdin) {
+    input = stdin
+  }
+  if (options.inputType === 'base64') {
+    console.log(XDRtoJSON(input, type))
+  } else {
+    console.log(JSONtoXDR(input, type))
+  }
+})
+
 program.on('command:*', function (command) {
   program.help()
 })
 
-program.parse(process.argv)
+if (process.stdin.isTTY) {
+  program.parse(process.argv)
+} else {
+  process.stdin.on('readable', function () {
+    var chunk = this.read()
+    if (chunk !== null) {
+      stdin += chunk
+    }
+  })
+  process.stdin.on('end', function () {
+    program.parse(process.argv)
+  })
+}
