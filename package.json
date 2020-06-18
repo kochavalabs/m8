@@ -13,8 +13,7 @@
     "build-grammar": "./node_modules/nearley/bin/nearleyc.js ./src/grammar/grammar.ne -o ./src/grammar/grammar.js",
     "build": "npm run build-grammar && npm run lint && babel src -d dist",
     "cli": "npm run build && env DEBUG='mazzaroth-*' node ./dist/mazzaroth.js",
-    "lint": "./node_modules/.bin/eslint . && ./node_modules/markdownlint-cli/markdownlint.js README.md",
-    "preinstall": "npx npm-force-resolutions"
+    "lint": "./node_modules/.bin/eslint . && ./node_modules/markdownlint-cli/markdownlint.js README.md"
   },
   "repository": {
     "type": "git",
