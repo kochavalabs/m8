@@ -442,7 +442,7 @@ subCmd.action(function (val, options) {
   process.stdin.on('data', process.exit.bind(process, 0))
 })
 
-const deployCmd = program.command('deploy <val>')
+const deployCmd = program.command('deploy [input]')
 const deployCmdDescription = `
 Helper for deploying a contract to a mazzaroth network. Takes a json config file,
 a sample config file can be found at
@@ -450,20 +450,24 @@ https://github.com/kochavalabs/full-contract-example/blob/master/deploy.json
 
 Examples:
   mazzaroth-cli deploy ./deploy.json
+  echo '{}' | mazzaroth-cli deploy ./deploy.json
 `
 
 deployCmd.description(deployCmdDescription)
   .option('-h --host <s>',
     'Web address of the host node default: "http://localhost:8081"')
-deployCmd.action(async function (configPath, options) {
-  const config = JSON.parse(fs.readFileSync(configPath))
+deployCmd.action(async function (input, options) {
+  let config = {}
+  if (stdin) {
+    config = JSON.parse(stdin)
+  } else {
+    config = JSON.parse(fs.readFileSync(input))
+  }
   const channel = config['channel-id'] || defaultChannel
   const version = config['contract-version'] || defaultVersion
   const owner = config['owner'] || defaultOwner
   let host = options.host || config['host']
   host = host || defaultAddr
-
-  const wasmFile = fs.readFileSync(config['contract'])
 
   const configAction = {
     channelID: channel,
@@ -484,6 +488,16 @@ deployCmd.action(async function (configPath, options) {
     }
   }
 
+  const sender = config['sender'] || defaultSender
+  const client = new NodeClient(host, sender)
+  await client.transactionSubmit(configAction)
+  // If they didn't set an initial contract, exit after the config action.
+  if (config['contract'] === undefined) {
+    return
+  }
+
+  await sleep(300)
+  const wasmFile = fs.readFileSync(config['contract'])
   const action = {
     channelID: channel,
     nonce: '1',
@@ -499,10 +513,6 @@ deployCmd.action(async function (configPath, options) {
     }
   }
 
-  const sender = config['sender'] || defaultSender
-  const client = new NodeClient(host, sender)
-  await client.transactionSubmit(configAction)
-  await sleep(300)
   await client.transactionSubmit(action)
   await sleep(300)
   const abiConf = config['abi']
