@@ -20,7 +20,8 @@
     "url": "git+ssh://git@github.com/kochavalabs/mazzaroth-cli.git"
   },
   "keywords": [
-    "mazzaroth"
+    "mazzaroth",
+    "kochavalabs"
   ],
   "author": "KochavaLabs",
   "license": "MIT",
