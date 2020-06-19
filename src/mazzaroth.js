@@ -484,7 +484,7 @@ https://github.com/kochavalabs/full-contract-example/blob/master/deploy.json
 
 Examples:
   mazzaroth-cli deploy ./deploy.json
-  echo '{}' | mazzaroth-cli deploy ./deploy.json
+  echo '{}' | mazzaroth-cli deploy
 `
 
 deployCmd.description(deployCmdDescription)
