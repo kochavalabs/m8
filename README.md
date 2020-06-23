@@ -38,7 +38,6 @@ commands will be explained in further detail below.
 | deploy | Helper for deploying a contract to a mazzaroth network. Takes a json config file, a sample config file can be found [here](https://github.com/kochavalabs/full-contract-example/blob/master/deploy.json) | mazzaroth-cli deploy ./deploy.json |
 | xdr | Command used for converting between JSON and base64 representations of xdr objects. Also can be piped to from stdin. | mazzaroth-cli xdr Transaction '{"action": { "nonce": "3" } }' |
 
-
 ### Contract CLI
 
 The call and lookup operations are relatively low level. The results need to be
@@ -132,7 +131,7 @@ repository between base64 and the JSON representations. Some basic examples:
 
 # Translate a basic empty transaction to base64 and back
 mazzaroth-cli xdr Transaction '{}'
-# AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA 
+# AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
 # You can also pipe to the xdr command from stdin
 mazzaroth-cli xdr Transaction '{}' | mazzaroth-cli xdr Transaction --inputType base64
