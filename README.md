@@ -22,15 +22,15 @@ commands will be explained in further detail below.
 
 | Command | Description | Example |
 | ------- | ----------- | ------- |
-| transaction-call | Submits a call transaction to a mazzaroth node. Arguments are XDR formatted as  base64 encoded strings. | mazzaroth-cli transaction-call my_func -a 9uZz -a f1zsfABG7J |
-| readonly-call | Submits a readonly call transaction to a mazzaroth node. Arguments are XDR formatted as  base64 encoded strings. | mazzaroth-cli readonly-call my_func -a 9uZz -a f1zsfABG7J |
+| transaction-call | Submits a call transaction to a mazzaroth node. Arguments are XDR formatted as base64 encoded strings. | mazzaroth-cli transaction-call my_func -a 9uZz -a f1zsfABG7J |
+| readonly-call | Submits a readonly call transaction to a mazzaroth node. Arguments are XDR formatted as base64 encoded strings. | mazzaroth-cli readonly-call my_func -a 9uZz -a f1zsfABG7J |
 | contract-update | Submits an update transaction to a mazzaroth node. The format of the argument is a path to a file containing contract wasm bytes. | mazzaroth-cli contract-update ./test/data/hello_world.wasm |
 | permission-update | Submits a permission transaction to a mazzaroth node that allows another account to act on your behalf. The argument to this call is the public key of the account you would like to grant access to. | mazzaroth-cli permission-update 3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c |
-| transaction-lookup |  Looks up the current status and results of a transaction by ID. Argument is a transaction ID (256 bit hex value). | mazzaroth-cli transaction-lookup 3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c |
+| transaction-lookup | Looks up the current status and results of a transaction by ID. Argument is a transaction ID (256 bit hex value). | mazzaroth-cli transaction-lookup 3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c |
 | block-lookup | Looks up a Block using either a block ID as hex or block Number. | mazzaroth-cli block-lookup 3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c |
 | block-header-lookup | Looks up a Block Header using either a block ID as hex or block Number. | mazzaroth-cli block-header-lookup 3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c |
 | receipt-lookup | Looks up a transaction receipt. Argument is a transaction ID (256 bit hex value). | mazzaroth-cli receipt-lookup 3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c |
-| nonce-lookup | Looks up the current nonce for an account, Argument is an account ID (256 bit hex value). | mazzaroth-cli nonce-lookup 3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c |
+| nonce-lookup | Looks up the current nonce for an account. Argument is an account ID (256 bit hex value). | mazzaroth-cli nonce-lookup 3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c |
 | account-lookup | Looks up the current information for an account, Argument is an account ID (256 bit hex value). | mazzaroth-cli account-lookup 3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c |
 | channel-lookup | Looks up the current information for a channel, Argument is what specifically to lookup about the channel. Current options: config/contract | mazzaroth-cli channel-lookup config |
 | contract-cli | Drops into a contract cli where you can call contract functions interactively. | mazzaroth-cli contract-cli abi.json |
@@ -44,7 +44,7 @@ The call and lookup operations are relatively low level. The results need to be
 interpreted from base64 strings or require multiple calls to complete. For
 example to complete a 'transaction-call', you would need to look up an account
 nonce, make the call, and finally lookup the results after execution. An example
-of this being done (using  node.js) can be seen in the
+of this being done (using node.js) can be seen in the
 [mazzaroth-js](https://github.com/kochavalabs/mazzaroth-js) repo.
 
 This is cumbersome, so we've provided a further abstraction called the contract
@@ -152,7 +152,7 @@ mazzaroth-cli xdr Transaction '{}' | mazzaroth-cli xdr Transaction --inputType b
 #    }
 # }
 
-# Translate a ReceitSubscriptionResult from base64
+# Translate a ReceiptSubscriptionResult from base64
 
 mazzaroth-cli xdr ReceiptSubscriptionResult --inputType base64 AAAAAQwZ2DC+GfzdV7UPw15cE/P6KQawvWjsfMgpLh4i//8qAAAAAHfJJ+t0nVQb1/bhniZi1NoR7UNVy3X8ccPnhzSdwlPb
 # {
