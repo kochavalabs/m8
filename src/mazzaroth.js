@@ -81,7 +81,7 @@ const callArgs = []
 const callOptions = [
   [
     '-a --args <args>',
-    'Arguments to the transaction call as base64 encoded strings.',
+    'Arguments to the transaction call are strings or json for complex structs.',
     function (arg) {
       callArgs.push(arg)
     }
@@ -93,7 +93,7 @@ Submits a call transaction to a mazzaroth node.
 (https://github.com/kochavalabs/mazzaroth-xdr)
 
 Examples:
-  mazzaroth-cli transaction-call my_func -a 9uZz -a f1zsfABG7J
+  mazzaroth-cli transaction-call my_func -a 'arg_one' -a 'arg_two'
 `
 clientCommand('transaction-call', transactionCallDesc, transactionOptions.concat(callOptions),
   (val, options, client) => {
@@ -125,7 +125,7 @@ Submits a readonly call transaction to a mazzaroth node.
 (https://github.com/kochavalabs/mazzaroth-xdr)
 
 Examples:
-  mazzaroth-cli readonly-call my_func -a 9uZz -a f1zsfABG7J
+  mazzaroth-cli readonly-call my_func -a 'arg_one' -a 'arg_two'
 `
 clientCommand('readonly-call', readonlyCallDesc, transactionOptions.concat(callOptions),
   (val, options, client) => {
