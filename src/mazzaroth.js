@@ -148,7 +148,7 @@ clientCommand('readonly-call', readonlyCallDesc, transactionOptions.concat(callO
 // Version of the contract being deployed
 const conOptions = [
   [
-    '-v --version <args>',
+    '-v --contract_version <args>',
     'version number for the contract'
   ]
 ]
@@ -173,12 +173,14 @@ clientCommand('contract-update', contractUpdateDesc, transactionOptions.concat(c
             enum: 1,
             value: {
               contract: data.toString('base64'),
-              version: options.version || '0.1.0'
+              version: options.contract_version || '0.1.0'
             }
           }
         }
       }
+
       if (err) throw err
+
       client.transactionSubmit(action, options.on_behalf_of).then(res => {
         console.log(res.toJSON())
       })
