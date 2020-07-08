@@ -500,6 +500,7 @@ deployCmd.action(async function (input, options) {
   const channel = config['channel-id'] || defaultChannel
   const version = config['contract-version'] || defaultVersion
   const owner = config['owner'] || defaultOwner
+  const channelName = config['channel-name'] || ''
   let host = options.host || config['host']
   host = host || defaultAddr
 
@@ -515,7 +516,7 @@ deployCmd.action(async function (input, options) {
           contractHash: '0'.repeat(64),
           version: '',
           owner: owner,
-          channelName: '',
+          channelName: channelName,
           admins: []
         }
       }
