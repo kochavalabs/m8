@@ -17,14 +17,6 @@ const defaultSender = '0'.repeat(64)
 const defaultVersion = '0.1'
 
 /**
- * Helper function to sleep for a specified number of ms.
- *
-*/
-function sleep (ms) {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
-
-/**
  * Many of the node client commands have similar options. This just wraps the
  * the common logic for these commands.
  *
@@ -490,6 +482,7 @@ Examples:
 deployCmd.description(deployCmdDescription)
   .option('-h --host <s>',
     'Web address of the host node default: "http://localhost:8081"')
+  .option('-t --timeout <number>', 'Timeout before transaction is considered failed in ms default: 3000')
 deployCmd.action(async function (input, options) {
   let config = {}
   if (stdin) {
@@ -525,13 +518,13 @@ deployCmd.action(async function (input, options) {
 
   const sender = config['sender'] || defaultSender
   const client = new NodeClient(host, sender)
-  await client.transactionSubmit(configAction)
+  const timeout = options.timeout || 3000
+  await client.transactionForReceipt(configAction, null, timeout)
   // If they didn't set an initial contract, exit after the config action.
   if (config['contract'] === undefined) {
     return
   }
 
-  await sleep(300)
   const wasmFile = fs.readFileSync(config['contract'])
   const action = {
     channelID: channel,
@@ -548,8 +541,7 @@ deployCmd.action(async function (input, options) {
     }
   }
 
-  await client.transactionSubmit(action)
-  await sleep(300)
+  await client.transactionForReceipt(action, null, timeout)
   const abiConf = config['abi']
   let abi = abiConf['value']
   if (abiConf['type'] === 'file') {
@@ -566,7 +558,7 @@ deployCmd.action(async function (input, options) {
       const tx = txSet[txIndex]
       const sender = tx['sender'] || defaultSender
       const client = new NodeClient(host, sender)
-      const contractClient = new ContractClient(abi, client, xdrTypes, channel)
+      const contractClient = new ContractClient(abi, client, xdrTypes, channel, null, timeout)
       const functionName = tx['function_name']
       const result = await contractClient[functionName](...tx['args'].map(x => {
         if (typeof x === 'object' && x !== null) {
