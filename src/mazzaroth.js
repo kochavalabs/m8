@@ -310,17 +310,29 @@ clientCommand('receipt-lookup', receiptLookupDesc, [],
       })
   })
 
+// Command option specific to looking up the nonce
+const nonceLookupOptions = [
+  [
+    '-r --raw',
+    'Prints just the raw nonce on success'
+  ]
+]
+
 const nonceLookupDesc = `
 Looks up the current nonce for an account, Val is an account ID (256 bit hex value).
 
 Examples:
   mazzaroth-cli nonce-lookup 3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c
 `
-clientCommand('nonce-lookup', nonceLookupDesc, [],
+clientCommand('nonce-lookup', nonceLookupDesc, nonceLookupOptions,
   (val, options, client) => {
     client.publicKey = Buffer.from(val, 'hex')
     client.nonceLookup().then(res => {
-      console.log(JSON.stringify(res.toJSON()))
+      if (options.raw) {
+        console.log(res.toJSON().nonce)
+      } else {
+        console.log(JSON.stringify(res.toJSON()))
+      }
     })
       .catch(error => {
         if (error.response) {
