@@ -121,7 +121,11 @@ Examples:
 `
 clientCommand('readonly-call', readonlyCallDesc, transactionOptions.concat(callOptions),
   (val, options, client) => {
-    client.readonlySubmit(val, ...callArgs).then(res => {
+    const call = {
+      function: val,
+      parameters: callArgs
+    }
+    client.readonlySubmit(call).then(res => {
       console.log(JSON.stringify(res.toJSON()))
     })
       .catch(error => {
@@ -324,11 +328,7 @@ clientCommand('nonce-lookup', nonceLookupDesc, nonceLookupOptions,
   (val, options, client) => {
     client.publicKey = Buffer.from(val, 'hex')
     client.nonceLookup().then(res => {
-      if (options.raw) {
-        console.log(res.toJSON().nonce)
-      } else {
-        console.log(JSON.stringify(res.toJSON()))
-      }
+      console.log(JSON.stringify(res.toJSON()))
     })
       .catch(error => {
         if (error.response) {
@@ -376,32 +376,6 @@ clientCommand('channel-lookup', channelLookupDesc, [],
     const valLookup = { 'contract': 1, 'config': 2 }
     client.channelInfoLookup(valLookup[val]).then(res => {
       console.log(JSON.stringify(res.toJSON()))
-    })
-      .catch(error => {
-        if (error.response) {
-          console.log(error.response.data)
-        } else {
-          console.log(error)
-        }
-      })
-  })
-
-const channelLookupDesc = `
-Looks up the current information for a channel, Val is what specifically to
-lookup about the channel. Current options:
-
-'config': ContractChannelConfig
-'contract': Contract (bytes and version)
-
-
-Examples:
-  mazzaroth-cli channel-lookup config
-`
-clientCommand('channel-lookup', channelLookupDesc, [],
-  (val, options, client) => {
-    const valLookup = { 'contract': 1, 'config': 2 }
-    client.channelInfoLookup(valLookup[val]).then(res => {
-      console.log(res.toJSON())
     })
       .catch(error => {
         if (error.response) {
