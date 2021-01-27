@@ -101,7 +101,7 @@ clientCommand('transaction-call', transactionCallDesc, transactionOptions.concat
       }
     }
     client.transactionSubmit(action, options.on_behalf_of).then(res => {
-      console.log(res.toJSON())
+      console.log(JSON.stringify(res.toJSON()))
     })
       .catch(error => {
         if (error.response) {
@@ -126,7 +126,7 @@ clientCommand('readonly-call', readonlyCallDesc, transactionOptions.concat(callO
       parameters: callArgs
     }
     client.readonlySubmit(call).then(res => {
-      console.log(res.toJSON())
+      console.log(JSON.stringify(res.toJSON()))
     })
       .catch(error => {
         if (error.response) {
@@ -174,7 +174,7 @@ clientCommand('contract-update', contractUpdateDesc, transactionOptions.concat(c
       if (err) throw err
 
       client.transactionSubmit(action, options.on_behalf_of).then(res => {
-        console.log(res.toJSON())
+        console.log(JSON.stringify(res.toJSON()))
       })
         .catch(error => {
           if (error.response) {
@@ -220,7 +220,7 @@ clientCommand('permission-update', permissionUpdateDesc, transactionOptions.conc
       }
     }
     client.transactionSubmit(action, options.on_behalf_of).then(res => {
-      console.log(res.toJSON())
+      console.log(JSON.stringify(res.toJSON()))
     })
       .catch(error => {
         if (error.response) {
@@ -241,7 +241,7 @@ Examples:
 clientCommand('transaction-lookup', transactionLookupDesc, [],
   (val, options, client) => {
     client.transactionLookup(val).then(res => {
-      console.log(res.toJSON())
+      console.log(JSON.stringify(res.toJSON()))
     })
       .catch(error => {
         if (error.response) {
@@ -276,7 +276,7 @@ Examples:
         val = possibleInt
       }
       client[lookupFunc](val).then(res => {
-        console.log(res.toJSON())
+        console.log(JSON.stringify(res.toJSON()))
       })
         .catch(error => {
           if (error.response) {
@@ -299,7 +299,7 @@ Examples:
 clientCommand('receipt-lookup', receiptLookupDesc, [],
   (val, options, client) => {
     client.receiptLookup(val).then(res => {
-      console.log(res.toJSON())
+      console.log(JSON.stringify(res.toJSON()))
     })
       .catch(error => {
         if (error.response) {
@@ -320,7 +320,7 @@ clientCommand('nonce-lookup', nonceLookupDesc, [],
   (val, options, client) => {
     client.publicKey = Buffer.from(val, 'hex')
     client.nonceLookup().then(res => {
-      console.log(res.toJSON())
+      console.log(JSON.stringify(res.toJSON()))
     })
       .catch(error => {
         if (error.response) {
@@ -341,7 +341,7 @@ clientCommand('account-lookup', accountLookupDesc, [],
   (val, options, client) => {
     client.publicKey = Buffer.from(val, 'hex')
     client.accountInfoLookup().then(res => {
-      console.log(res.toJSON())
+      console.log(JSON.stringify(res.toJSON()))
     })
       .catch(error => {
         if (error.response) {
@@ -367,7 +367,7 @@ clientCommand('channel-lookup', channelLookupDesc, [],
   (val, options, client) => {
     const valLookup = { 'contract': 1, 'config': 2 }
     client.channelInfoLookup(valLookup[val]).then(res => {
-      console.log(res.toJSON())
+      console.log(JSON.stringify(res.toJSON()))
     })
       .catch(error => {
         if (error.response) {
