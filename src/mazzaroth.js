@@ -328,7 +328,11 @@ clientCommand('nonce-lookup', nonceLookupDesc, nonceLookupOptions,
   (val, options, client) => {
     client.publicKey = Buffer.from(val, 'hex')
     client.nonceLookup().then(res => {
-      console.log(JSON.stringify(res.toJSON()))
+      if (options.raw) {
+        console.log(res.toJSON().nonce)
+      } else {
+        console.log(JSON.stringify(res.toJSON()))
+      }
     })
       .catch(error => {
         if (error.response) {
