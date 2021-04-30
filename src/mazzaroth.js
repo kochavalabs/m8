@@ -121,7 +121,11 @@ Examples:
 `
 clientCommand('readonly-call', readonlyCallDesc, transactionOptions.concat(callOptions),
   (val, options, client) => {
-    client.readonlySubmit(val, ...callArgs).then(res => {
+    const call = {
+      function: val,
+      parameters: callArgs
+    }
+    client.readonlySubmit(call).then(res => {
       console.log(JSON.stringify(res.toJSON()))
     })
       .catch(error => {
