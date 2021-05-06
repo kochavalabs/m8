@@ -162,7 +162,7 @@ clientCommand('contract-update', contractUpdateDesc, transactionOptions.concat(c
             enum: 1,
             value: {
               contractBytes: data.toString('base64'),
-              contractHash: sha3256.create().update(data.buffer).digest('hex'),
+              contractHash: sha3256.create().update(data.buffer).hex(),
               version: options.contract_version || '0.1.0'
             }
           }
