@@ -8,6 +8,7 @@ import { NodeClient, ContractClient, ReceiptSubscribe, XDRtoJSON, JSONtoXDR } fr
 import ContractIO from './contract-io.js'
 import program from 'commander'
 import fs from 'fs'
+import { sha3_256 as sha3256 } from 'js-sha3'
 require('app-module-path').addPath(path.resolve(`${__dirname}/../node_modules`))
 
 const defaultChannel = '0'.repeat(64)
@@ -121,11 +122,7 @@ Examples:
 `
 clientCommand('readonly-call', readonlyCallDesc, transactionOptions.concat(callOptions),
   (val, options, client) => {
-    const call = {
-      function: val,
-      parameters: callArgs
-    }
-    client.readonlySubmit(call).then(res => {
+    client.readonlySubmit(val, ...callArgs).then(res => {
       console.log(JSON.stringify(res.toJSON()))
     })
       .catch(error => {
@@ -164,7 +161,8 @@ clientCommand('contract-update', contractUpdateDesc, transactionOptions.concat(c
           value: {
             enum: 1,
             value: {
-              contract: data.toString('base64'),
+              contractBytes: data.toString('base64'),
+              contractHash: sha3256.create().update(data.buffer).hex(),
               version: options.contract_version || '0.1.0'
             }
           }
@@ -483,9 +481,6 @@ deployCmd.action(async function (input, options) {
       value: {
         enum: 2,
         value: {
-          channelID: channel,
-          contractHash: '0'.repeat(64),
-          version: '',
           owner: owner,
           channelName: channelName,
           admins: []
@@ -512,7 +507,8 @@ deployCmd.action(async function (input, options) {
       value: {
         enum: 1,
         value: {
-          contract: wasmFile.toString('base64'),
+          contractBytes: wasmFile.toString('base64'),
+          contractHash: sha3256.create().update(wasmFile.buffer).hex(),
           version: version
         }
       }
