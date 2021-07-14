@@ -42,6 +42,6 @@
     "mazzaroth-js": "0.2.7",
     "mazzaroth-xdr": "0.2.7",
     "nearley": "^2.16.0",
-    "xdr-js-serialize": "develop"
+    "xdr-js-serialize": "^0.2.0"
   }
 }
