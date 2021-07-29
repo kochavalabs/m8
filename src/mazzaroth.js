@@ -15,6 +15,7 @@ const defaultChannel = '0'.repeat(64)
 const defaultAddr = 'http://localhost:8081'
 const defaultOwner = '3b6a27bcceb6a42d62a3a8d02a6f0d73653215771de243a63ac048a18b59da29'
 const defaultSender = '0'.repeat(64)
+const defaultExpiration = 1
 const defaultVersion = '0.1'
 
 /**
@@ -65,6 +66,10 @@ const transactionOptions = [
   [
     '-o --on_behalf_of <s>',
     'Account to send the transaction as.'
+  ],
+  [
+    '-e --transaction_expire_after <s>',
+    'transaction expires if not included in the next <s> blocks.'
   ]
 ]
 
@@ -90,9 +95,11 @@ Examples:
 `
 clientCommand('transaction-call', transactionCallDesc, transactionOptions.concat(callOptions),
   (val, options, client) => {
+    const blockExpiration = defaultExpiration | options.transaction_expire_after
     const action = {
       channelID: options.channel_id || defaultChannel,
       nonce: (options.nonce || Math.floor(Math.random() * Math.floor(1000000000))).toString(),
+      blockExpirationNumber: blockExpiration.toString(),
       category: {
         enum: 1,
         value: {
@@ -101,29 +108,11 @@ clientCommand('transaction-call', transactionCallDesc, transactionOptions.concat
         }
       }
     }
-    client.transactionSubmit(action, options.on_behalf_of).then(res => {
-      console.log(JSON.stringify(res.toJSON()))
-    })
-      .catch(error => {
-        if (error.response) {
-          console.log(error.response.data)
-        } else {
-          console.log(error)
-        }
+    client.blockHeightLookup().then(res => {
+      action.blockExpirationNumber = action.blockExpirationNumber + res
+      client.transactionSubmit(action, options.on_behalf_of).then(res => {
+        console.log(JSON.stringify(res.toJSON()))
       })
-  })
-
-const readonlyCallDesc = `
-Submits a readonly call transaction to a mazzaroth node. 
-(https://github.com/kochavalabs/mazzaroth-xdr)
-
-Examples:
-  mazzaroth-cli readonly-call my_func -a 'arg_one' -a 'arg_two'
-`
-clientCommand('readonly-call', readonlyCallDesc, transactionOptions.concat(callOptions),
-  (val, options, client) => {
-    client.readonlySubmit(val, ...callArgs).then(res => {
-      console.log(JSON.stringify(res.toJSON()))
     })
       .catch(error => {
         if (error.response) {
@@ -152,10 +141,12 @@ Examples:
 `
 clientCommand('contract-update', contractUpdateDesc, transactionOptions.concat(conOptions),
   (val, options, client) => {
+    const blockExpiration = defaultExpiration | options.transaction_expire_after
     fs.readFile(val, (err, data) => {
       const action = {
         channelID: options.channel_id || defaultChannel,
         nonce: (options.nonce || Math.floor(Math.random() * Math.floor(1000000000))).toString(),
+        blockExpirationNumber: blockExpiration.toString(),
         category: {
           enum: 2,
           value: {
@@ -171,8 +162,11 @@ clientCommand('contract-update', contractUpdateDesc, transactionOptions.concat(c
 
       if (err) throw err
 
-      client.transactionSubmit(action, options.on_behalf_of).then(res => {
-        console.log(JSON.stringify(res.toJSON()))
+      client.blockHeightLookup().then(res => {
+        action.blockExpirationNumber = action.blockExpirationNumber + res
+        client.transactionSubmit(action, options.on_behalf_of).then(res => {
+          console.log(JSON.stringify(res.toJSON()))
+        })
       })
         .catch(error => {
           if (error.response) {
@@ -202,10 +196,12 @@ Examples:
 `
 clientCommand('permission-update', permissionUpdateDesc, transactionOptions.concat(permOptions),
   (val, options, client) => {
+    const blockExpiration = defaultExpiration | options.transaction_expire_after
     const permType = Number(options.perm_type) || 0
     const action = {
       channelID: options.channel_id || defaultChannel,
       nonce: (options.nonce || Math.floor(Math.random() * Math.floor(1000000000))).toString(),
+      blockExpirationNumber: blockExpiration.toString(),
       category: {
         enum: 2,
         value: {
@@ -217,8 +213,11 @@ clientCommand('permission-update', permissionUpdateDesc, transactionOptions.conc
         }
       }
     }
-    client.transactionSubmit(action, options.on_behalf_of).then(res => {
-      console.log(JSON.stringify(res.toJSON()))
+    client.blockHeightLookup().then(res => {
+      action.blockExpirationNumber = action.blockExpirationNumber + res
+      client.transactionSubmit(action, options.on_behalf_of).then(res => {
+        console.log(JSON.stringify(res.toJSON()))
+      })
     })
       .catch(error => {
         if (error.response) {
@@ -298,39 +297,6 @@ clientCommand('receipt-lookup', receiptLookupDesc, [],
   (val, options, client) => {
     client.receiptLookup(val).then(res => {
       console.log(JSON.stringify(res.toJSON()))
-    })
-      .catch(error => {
-        if (error.response) {
-          console.log(error.response.data)
-        } else {
-          console.log(error)
-        }
-      })
-  })
-
-// Command option specific to looking up the nonce
-const nonceLookupOptions = [
-  [
-    '-r --raw',
-    'Prints just the raw nonce on success'
-  ]
-]
-
-const nonceLookupDesc = `
-Looks up the current nonce for an account, Val is an account ID (256 bit hex value).
-
-Examples:
-  mazzaroth-cli nonce-lookup 3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c
-`
-clientCommand('nonce-lookup', nonceLookupDesc, nonceLookupOptions,
-  (val, options, client) => {
-    client.publicKey = Buffer.from(val, 'hex')
-    client.nonceLookup().then(res => {
-      if (options.raw) {
-        console.log(res.toJSON().nonce)
-      } else {
-        console.log(JSON.stringify(res.toJSON()))
-      }
     })
       .catch(error => {
         if (error.response) {
@@ -470,12 +436,19 @@ deployCmd.action(async function (input, options) {
   const version = config['contract-version'] || defaultVersion
   const owner = config['owner'] || defaultOwner
   const channelName = config['channel-name'] || ''
+  const txExpiration = config['transaction-expire-after'] | defaultExpiration
   let host = options.host || config['host']
   host = host || defaultAddr
 
+  const sender = config['sender'] || defaultSender
+  const client = new NodeClient(host, sender)
+  const blockHeight = await client.blockHeightLookup()
+  const blockExpirationNumber = blockHeight + txExpiration
+
   const configAction = {
     channelID: channel,
-    nonce: '0',
+    nonce: '3',
+    blockExpirationNumber: blockExpirationNumber.toString(),
     category: {
       enum: 2,
       value: {
@@ -489,8 +462,6 @@ deployCmd.action(async function (input, options) {
     }
   }
 
-  const sender = config['sender'] || defaultSender
-  const client = new NodeClient(host, sender)
   const timeout = options.timeout || 3000
   await client.transactionForReceipt(configAction, null, timeout)
   // If they didn't set an initial contract, exit after the config action.
@@ -498,16 +469,36 @@ deployCmd.action(async function (input, options) {
     return
   }
 
-  const wasmFile = fs.readFileSync(config['contract'])
+  let wasmFile
+  const contractRootDir = path.dirname(input)
+  if (path.isAbsolute(config['contract'])) {
+    wasmFile = fs.readFileSync(config['contract'])
+  } else {
+    const wasmPath = path.join(path.dirname(input), config['contract'])
+    wasmFile = fs.readFileSync(wasmPath)
+  }
+  const abiConf = config['abi']
+  let abi = abiConf['value']
+  if (abiConf['type'] === 'file') {
+    if (path.isAbsolute(abiConf['value'])) {
+      abi = JSON.parse(fs.readFileSync(abiConf['value']))
+    } else {
+      const abiPath = path.join(contractRootDir, abiConf['value'])
+      abi = JSON.parse(fs.readFileSync(abiPath))
+    }
+  }
+  const blockExpirationNumber2 = blockExpirationNumber + 1
   const action = {
     channelID: channel,
-    nonce: '1',
+    nonce: '10',
+    blockExpirationNumber: blockExpirationNumber2.toString(),
     category: {
       enum: 2,
       value: {
         enum: 1,
         value: {
           contractBytes: wasmFile.toString('base64'),
+          abi: abi,
           contractHash: sha3256.create().update(wasmFile.buffer).hex(),
           version: version
         }
@@ -516,14 +507,14 @@ deployCmd.action(async function (input, options) {
   }
 
   await client.transactionForReceipt(action, null, timeout)
-  const abiConf = config['abi']
-  let abi = abiConf['value']
-  if (abiConf['type'] === 'file') {
-    abi = JSON.parse(fs.readFileSync(abiConf['value']))
-  }
   let xdrTypes = {}
   if (config['xdr-types']) {
-    xdrTypes = require(path.resolve(config['xdr-types']))
+    if (path.isAbsolute(config['xdr-types'])) {
+      xdrTypes = require(path.resolve(config['xdr-types']))
+    } else {
+      const xdrTypesPath = path.join(contractRootDir, config['xdr-types'])
+      xdrTypes = require(path.resolve(xdrTypesPath))
+    }
   }
   const transactions = config['init-transactions']
   for (const txName in transactions) {
@@ -534,7 +525,7 @@ deployCmd.action(async function (input, options) {
       const client = new NodeClient(host, sender)
       const contractClient = new ContractClient(abi, client, xdrTypes, channel, null, timeout)
       const functionName = tx['function_name']
-      const result = await contractClient[functionName](...tx['args'].map(x => {
+      const result = await contractClient[functionName](txExpiration, ...tx['args'].map(x => {
         if (typeof x === 'object' && x !== null) {
           return JSON.stringify(x)
         }

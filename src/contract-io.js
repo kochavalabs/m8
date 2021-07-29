@@ -63,13 +63,9 @@ class ContractIO {
   */
   abi () {
     const functions = this.contractClient.abiJson.filter(x => x.type === 'function')
-    const readonlys = this.contractClient.abiJson.filter(x => x.type === 'readonly')
     console.log()
     console.log('Functions: ')
     functions.forEach(outputAbiFunc)
-    console.log()
-    console.log('ReadOnly Functions: ')
-    readonlys.forEach(outputAbiFunc)
     console.log()
     this.rl.prompt()
   }
@@ -83,11 +79,11 @@ class ContractIO {
    *
    * @return none
   */
-  executeContractFunction (functionName, args) {
+  executeContractFunction (txExpiration, functionName, args) {
     if (!this.contractClient[functionName]) {
       throw new Error(`${functionName} is not a contract function`)
     }
-    this.contractClient[functionName](...args).then(res => {
+    this.contractClient[functionName](txExpiration, ...args).then(res => {
       console.log(res)
       this.rl.prompt()
     }).catch(e => {
@@ -113,7 +109,7 @@ class ContractIO {
           if (this[res.results[0]]) {
             this[res.results[0]]()
           } else {
-            this.executeContractFunction(res.results[0].name, res.results[0].args)
+            this.executeContractFunction(res.results[0].txExpiration, res.results[0].name, res.results[0].args)
           }
         } else {
           console.log(`Incomplete statement: "${line}"`)
