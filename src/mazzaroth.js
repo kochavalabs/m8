@@ -15,7 +15,7 @@ const defaultChannel = '0'.repeat(64)
 const defaultAddr = 'http://localhost:8081'
 const defaultOwner = '3b6a27bcceb6a42d62a3a8d02a6f0d73653215771de243a63ac048a18b59da29'
 const defaultSender = '0'.repeat(64)
-const defaultExpiration = 1
+const defaultExpiration = 5
 const defaultVersion = '0.1'
 
 /**
@@ -127,6 +127,14 @@ const conOptions = [
   [
     '-v --contract_version <args>',
     'version number for the contract'
+  ],
+  [
+    '-a --abi <args>',
+    'ABI JSON file to include with contract. Required.'
+  ],
+  [
+    '-e --transaction_expire_after <s>',
+    'transaction expires if not included in the next <s> blocks.'
   ]
 ]
 
@@ -140,41 +148,55 @@ Examples:
 `
 clientCommand('contract-update', contractUpdateDesc, transactionOptions.concat(conOptions),
   (val, options, client) => {
-    const blockExpiration = defaultExpiration | options.transaction_expire_after
-    fs.readFile(val, (err, data) => {
-      const action = {
-        channelID: options.channel_id || defaultChannel,
-        nonce: (options.nonce || Math.floor(Math.random() * Math.floor(1000000000))).toString(),
-        blockExpirationNumber: blockExpiration.toString(),
-        category: {
-          enum: 2,
-          value: {
-            enum: 1,
-            value: {
-              contractBytes: data.toString('base64'),
-              contractHash: sha3256.create().update(data.buffer).hex(),
-              version: options.contract_version || '0.1.0'
+    if (options.abi) {
+      fs.readFile(options.abi, (err, data) => {
+        if (err) {
+          console.log('could not read file: ' + val)
+          return
+        }
+        const abiJSON = JSON.parse(data.toString('ascii'))
+
+        const blockExpiration = defaultExpiration | options.transaction_expire_after
+        fs.readFile(val, (err, data) => {
+          const action = {
+            channelID: options.channel_id || defaultChannel,
+            nonce: (options.nonce || Math.floor(Math.random() * Math.floor(1000000000))).toString(),
+            blockExpirationNumber: blockExpiration.toString(),
+            category: {
+              enum: 2,
+              value: {
+                enum: 1,
+                value: {
+                  contractBytes: data.toString('base64'),
+                  abi: abiJSON,
+                  contractHash: sha3256.create().update(data.buffer).hex(),
+                  version: options.contract_version || '0.1.0'
+                }
+              }
             }
           }
-        }
-      }
 
-      if (err) throw err
+          if (err) throw err
 
-      client.blockHeightLookup().then(res => {
-        action.blockExpirationNumber = action.blockExpirationNumber + res
-        client.transactionSubmit(action, options.on_behalf_of).then(res => {
-          console.log(JSON.stringify(res.toJSON()))
+          client.blockHeightLookup().then(res => {
+            action.blockExpirationNumber = (parseInt(blockExpiration) + parseInt(res)).toString()
+            console.log(action)
+            client.transactionSubmit(action, options.on_behalf_of).then(res => {
+              console.log(JSON.stringify(res.toJSON()))
+            })
+          })
+            .catch(error => {
+              if (error.response) {
+                console.log(error.response.data)
+              } else {
+                console.log(error)
+              }
+            })
         })
       })
-        .catch(error => {
-          if (error.response) {
-            console.log(error.response.data)
-          } else {
-            console.log(error)
-          }
-        })
-    })
+    } else {
+      console.log('Please provide an ABI JSON file')
+    }
   })
 
 // Command option specific to the granting/revoking of permission.
@@ -213,7 +235,7 @@ clientCommand('permission-update', permissionUpdateDesc, transactionOptions.conc
       }
     }
     client.blockHeightLookup().then(res => {
-      action.blockExpirationNumber = action.blockExpirationNumber + res
+      action.blockExpirationNumber = (parseInt(blockExpiration) + parseInt(res)).toString()
       client.transactionSubmit(action, options.on_behalf_of).then(res => {
         console.log(JSON.stringify(res.toJSON()))
       })
