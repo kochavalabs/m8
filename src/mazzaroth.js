@@ -99,17 +99,16 @@ clientCommand('transaction-call', transactionCallDesc, transactionOptions.concat
     const action = {
       channelID: options.channel_id || defaultChannel,
       nonce: (options.nonce || Math.floor(Math.random() * Math.floor(1000000000))).toString(),
-      blockExpirationNumber: blockExpiration.toString(),
       category: {
         enum: 1,
         value: {
           function: val,
-          parameters: callArgs
+          arguments: callArgs
         }
       }
     }
     client.blockHeightLookup().then(res => {
-      action.blockExpirationNumber = action.blockExpirationNumber + res
+      action.blockExpirationNumber = (parseInt(blockExpiration) + parseInt(res)).toString()
       client.transactionSubmit(action, options.on_behalf_of).then(res => {
         console.log(JSON.stringify(res.toJSON()))
       })
