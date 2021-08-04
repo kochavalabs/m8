@@ -44,7 +44,7 @@
     "commander": "^2.19.0",
     "debug": "^4.1.1",
     "js-sha3": "^0.8.0",
-    "mazzaroth-js": "0.4.3",
+    "mazzaroth-js": "0.4.4",
     "mazzaroth-xdr": "0.4.3",
     "nearley": "^2.16.0",
     "xdr-js-serialize": "^0.2.0"
