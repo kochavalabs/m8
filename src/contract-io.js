@@ -21,11 +21,11 @@ const debug = Debug('mazzaroth-cli:contract-io')
 */
 function outputAbiFunc (abiEntry) {
   let output = `  ${abiEntry.name}(`
-  const types = abiEntry.inputs.map(x => x.type)
+  const types = abiEntry.inputs.map(x => x.parameterType)
   output += types.join(', ')
   output += ')'
   if (abiEntry.outputs[0]) {
-    output += ` -> ${abiEntry.outputs[0].type}`
+    output += ` -> ${abiEntry.outputs[0].parameterType}`
   }
   console.log(output)
 }
@@ -62,10 +62,15 @@ class ContractIO {
    * call.
   */
   abi () {
-    const functions = this.contractClient.abiJson.filter(x => x.type === 'function')
+    console.log(this.contractClient.abiJson.functions)
+    const functions = this.contractClient.abiJson.functions.filter(x => x.functionType === 'function')
+    const readonlys = this.contractClient.abiJson.functions.filter(x => x.functionType === 'readonly')
     console.log()
     console.log('Functions: ')
     functions.forEach(outputAbiFunc)
+    console.log()
+    console.log('ReadOnly Functions: ')
+    readonlys.forEach(outputAbiFunc)
     console.log()
     this.rl.prompt()
   }

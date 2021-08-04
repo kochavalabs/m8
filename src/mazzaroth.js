@@ -456,7 +456,6 @@ deployCmd.action(async function (input, options) {
   const channel = config['channel-id'] || defaultChannel
   const version = config['contract-version'] || defaultVersion
   const owner = config['owner'] || defaultOwner
-  const channelName = config['channel-name'] || ''
   const txExpiration = config['transaction-expire-after'] | defaultExpiration
   let host = options.host || config['host']
   host = host || defaultAddr
@@ -476,7 +475,6 @@ deployCmd.action(async function (input, options) {
         enum: 2,
         value: {
           owner: owner,
-          channelName: channelName,
           admins: []
         }
       }
@@ -484,7 +482,8 @@ deployCmd.action(async function (input, options) {
   }
 
   const timeout = options.timeout || 3000
-  await client.transactionForReceipt(configAction, null, timeout)
+  const configRes = await client.transactionForReceipt(configAction, null, timeout).then(x => x.toJSON())
+  console.log(configRes)
   // If they didn't set an initial contract, exit after the config action.
   if (config['contract'] === undefined) {
     return
@@ -527,7 +526,8 @@ deployCmd.action(async function (input, options) {
     }
   }
 
-  await client.transactionForReceipt(action, null, timeout)
+  const contractRes = await client.transactionForReceipt(action, null, timeout).then(x => x.toJSON())
+  console.log(contractRes)
   let xdrTypes = {}
   if (config['xdr-types']) {
     if (path.isAbsolute(config['xdr-types'])) {
