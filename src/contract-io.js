@@ -21,11 +21,11 @@ const debug = Debug('mazzaroth-cli:contract-io')
 */
 function outputAbiFunc (abiEntry) {
   let output = `  ${abiEntry.name}(`
-  const types = abiEntry.inputs.map(x => x.type)
+  const types = abiEntry.inputs.map(x => x.parameterType)
   output += types.join(', ')
   output += ')'
   if (abiEntry.outputs[0]) {
-    output += ` -> ${abiEntry.outputs[0].type}`
+    output += ` -> ${abiEntry.outputs[0].parameterType}`
   }
   console.log(output)
 }
@@ -62,8 +62,9 @@ class ContractIO {
    * call.
   */
   abi () {
-    const functions = this.contractClient.abiJson.filter(x => x.type === 'function')
-    const readonlys = this.contractClient.abiJson.filter(x => x.type === 'readonly')
+    console.log(this.contractClient.abiJson.functions)
+    const functions = this.contractClient.abiJson.functions.filter(x => x.functionType === 'function')
+    const readonlys = this.contractClient.abiJson.functions.filter(x => x.functionType === 'readonly')
     console.log()
     console.log('Functions: ')
     functions.forEach(outputAbiFunc)
@@ -83,11 +84,11 @@ class ContractIO {
    *
    * @return none
   */
-  executeContractFunction (functionName, args) {
+  executeContractFunction (txExpiration, functionName, args) {
     if (!this.contractClient[functionName]) {
       throw new Error(`${functionName} is not a contract function`)
     }
-    this.contractClient[functionName](...args).then(res => {
+    this.contractClient[functionName](txExpiration, ...args).then(res => {
       console.log(res)
       this.rl.prompt()
     }).catch(e => {
@@ -113,7 +114,7 @@ class ContractIO {
           if (this[res.results[0]]) {
             this[res.results[0]]()
           } else {
-            this.executeContractFunction(res.results[0].name, res.results[0].args)
+            this.executeContractFunction(res.results[0].txExpiration, res.results[0].name, res.results[0].args)
           }
         } else {
           console.log(`Incomplete statement: "${line}"`)

@@ -1,6 +1,6 @@
 {
   "name": "mazzaroth-cli",
-  "version": "0.2.7",
+  "version": "0.4.0",
   "description": "Tool that wraps the mazzaroth-js node/contract clients and facilitates interaction with a Mazzaroth node.",
   "main": "dist/mazzaroth.js",
   "files": [
@@ -26,11 +26,16 @@
   "author": "KochavaLabs",
   "license": "MIT",
   "devDependencies": {
-    "@babel/cli": "^7.13.16",
+    "babel-cli": "^6.18.0",
     "babel-preset-env": "^1.7.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-register": "^6.26.0",
     "eslint": "^5.15.3",
     "eslint-config-standard": "^12.0.0",
+    "eslint-plugin-import": "^2.23.4",
+    "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.0.1",
+    "eslint-plugin-standard": "^5.0.0",
     "markdownlint-cli": "^0.23.1",
     "package-tagger": "^0.1.1"
   },
@@ -39,8 +44,8 @@
     "commander": "^2.19.0",
     "debug": "^4.1.1",
     "js-sha3": "^0.8.0",
-    "mazzaroth-js": "0.2.7",
-    "mazzaroth-xdr": "0.2.7",
+    "mazzaroth-js": "0.4.4",
+    "mazzaroth-xdr": "0.4.3",
     "nearley": "^2.16.0",
     "xdr-js-serialize": "^0.2.0"
   }
