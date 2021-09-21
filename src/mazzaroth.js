@@ -349,6 +349,26 @@ clientCommand('account-lookup', accountLookupDesc, [],
       })
   })
 
+const abiLookupDesc = `
+Looks up the ABI JSON for a channel, Val is an Channel ID (256 bit hex value).
+
+Examples:
+  mazzaroth-cli abi-lookup 3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c
+`
+clientCommand('abi-lookup', abiLookupDesc, [],
+  (val, options, client) => {
+    client.abiLookup(val).then(res => {
+      console.log(JSON.stringify(res.toJSON()))
+    })
+      .catch(error => {
+        if (error.response) {
+          console.log(error.response.data)
+        } else {
+          console.log(error)
+        }
+      })
+  })
+
 const channelLookupDesc = `
 Looks up the current information for a channel, Val is what specifically to
 lookup about the channel. Current options:
