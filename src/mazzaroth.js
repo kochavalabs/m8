@@ -293,7 +293,7 @@ Examples:
       if (!isNaN(possibleInt) && possibleInt.toString() === val) {
         val = possibleInt
       }
-      client[lookupFunc](val).then(res => {
+      client[lookupFunc](val.toString()).then(res => {
         console.log(JSON.stringify(res.toJSON()))
       })
         .catch(error => {
