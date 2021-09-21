@@ -100,8 +100,8 @@ clientCommand('transaction-call', transactionCallDesc, transactionOptions.concat
       channelID: options.channel_id || defaultChannel,
       nonce: (options.nonce || Math.floor(Math.random() * Math.floor(1000000000))).toString(),
       category: {
-        enum: 1,
-        value: {
+        type: 1,
+        data: {
           function: val,
           arguments: callArgs
         }
@@ -163,10 +163,10 @@ clientCommand('contract-update', contractUpdateDesc, transactionOptions.concat(c
             nonce: (options.nonce || Math.floor(Math.random() * Math.floor(1000000000))).toString(),
             blockExpirationNumber: blockExpiration.toString(),
             category: {
-              enum: 2,
-              value: {
-                enum: 1,
-                value: {
+              type: 2,
+              data: {
+                type: 1,
+                data: {
                   contractBytes: data.toString('base64'),
                   abi: abiJSON,
                   contractHash: sha3256.create().update(data.buffer).hex(),
@@ -224,10 +224,10 @@ clientCommand('permission-update', permissionUpdateDesc, transactionOptions.conc
       nonce: (options.nonce || Math.floor(Math.random() * Math.floor(1000000000))).toString(),
       blockExpirationNumber: blockExpiration.toString(),
       category: {
-        enum: 2,
-        value: {
-          enum: 3,
-          value: {
+        type: 2,
+        data: {
+          type: 3,
+          data: {
             key: val,
             action: permType
           }
@@ -470,10 +470,10 @@ deployCmd.action(async function (input, options) {
     nonce: '3',
     blockExpirationNumber: blockExpirationNumber.toString(),
     category: {
-      enum: 2,
-      value: {
-        enum: 2,
-        value: {
+      type: 2,
+      data: {
+        type: 2,
+        data: {
           owner: owner,
           admins: []
         }
@@ -513,10 +513,10 @@ deployCmd.action(async function (input, options) {
     nonce: '10',
     blockExpirationNumber: blockExpirationNumber2.toString(),
     category: {
-      enum: 2,
-      value: {
-        enum: 1,
-        value: {
+      type: 2,
+      data: {
+        type: 1,
+        data: {
           contractBytes: wasmFile.toString('base64'),
           abi: abi,
           contractHash: sha3256.create().update(wasmFile.buffer).hex(),
