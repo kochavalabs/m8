@@ -62,7 +62,6 @@ class ContractIO {
    * call.
   */
   abi () {
-    console.log(this.contractClient.abiJson.functions)
     const functions = this.contractClient.abiJson.functions.filter(x => x.functionType === 'function')
     const readonlys = this.contractClient.abiJson.functions.filter(x => x.functionType === 'readonly')
     console.log()

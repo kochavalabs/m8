@@ -1,6 +1,6 @@
 {
   "name": "mazzaroth-cli",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "Tool that wraps the mazzaroth-js node/contract clients and facilitates interaction with a Mazzaroth node.",
   "main": "dist/mazzaroth.js",
   "files": [
@@ -44,9 +44,9 @@
     "commander": "^2.19.0",
     "debug": "^4.1.1",
     "js-sha3": "^0.8.0",
-    "mazzaroth-js": "0.4.6",
-    "mazzaroth-xdr": "0.4.3",
+    "mazzaroth-js": "0.5.0",
+    "mazzaroth-xdr": "0.5.0",
     "nearley": "^2.16.0",
-    "xdr-js-serialize": "^0.2.0"
+    "xdr-js-serialize": "0.3.0"
   }
 }

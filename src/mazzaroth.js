@@ -100,8 +100,8 @@ clientCommand('transaction-call', transactionCallDesc, transactionOptions.concat
       channelID: options.channel_id || defaultChannel,
       nonce: (options.nonce || Math.floor(Math.random() * Math.floor(1000000000))).toString(),
       category: {
-        enum: 1,
-        value: {
+        type: 1,
+        data: {
           function: val,
           arguments: callArgs
         }
@@ -163,10 +163,10 @@ clientCommand('contract-update', contractUpdateDesc, transactionOptions.concat(c
             nonce: (options.nonce || Math.floor(Math.random() * Math.floor(1000000000))).toString(),
             blockExpirationNumber: blockExpiration.toString(),
             category: {
-              enum: 2,
-              value: {
-                enum: 1,
-                value: {
+              type: 2,
+              data: {
+                type: 1,
+                data: {
                   contractBytes: data.toString('base64'),
                   abi: abiJSON,
                   contractHash: sha3256.create().update(data.buffer).hex(),
@@ -224,10 +224,10 @@ clientCommand('permission-update', permissionUpdateDesc, transactionOptions.conc
       nonce: (options.nonce || Math.floor(Math.random() * Math.floor(1000000000))).toString(),
       blockExpirationNumber: blockExpiration.toString(),
       category: {
-        enum: 2,
-        value: {
-          enum: 3,
-          value: {
+        type: 2,
+        data: {
+          type: 3,
+          data: {
             key: val,
             action: permType
           }
@@ -293,7 +293,7 @@ Examples:
       if (!isNaN(possibleInt) && possibleInt.toString() === val) {
         val = possibleInt
       }
-      client[lookupFunc](val).then(res => {
+      client[lookupFunc](val.toString()).then(res => {
         console.log(JSON.stringify(res.toJSON()))
       })
         .catch(error => {
@@ -338,6 +338,26 @@ clientCommand('account-lookup', accountLookupDesc, [],
   (val, options, client) => {
     client.publicKey = Buffer.from(val, 'hex')
     client.accountInfoLookup().then(res => {
+      console.log(JSON.stringify(res.toJSON()))
+    })
+      .catch(error => {
+        if (error.response) {
+          console.log(error.response.data)
+        } else {
+          console.log(error)
+        }
+      })
+  })
+
+const abiLookupDesc = `
+Looks up the ABI JSON for a channel, Val is an Channel ID (256 bit hex value).
+
+Examples:
+  mazzaroth-cli abi-lookup 3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c
+`
+clientCommand('abi-lookup', abiLookupDesc, [],
+  (val, options, client) => {
+    client.abiLookup(val).then(res => {
       console.log(JSON.stringify(res.toJSON()))
     })
       .catch(error => {
@@ -470,10 +490,10 @@ deployCmd.action(async function (input, options) {
     nonce: '3',
     blockExpirationNumber: blockExpirationNumber.toString(),
     category: {
-      enum: 2,
-      value: {
-        enum: 2,
-        value: {
+      type: 2,
+      data: {
+        type: 2,
+        data: {
           owner: owner,
           admins: []
         }
@@ -513,10 +533,10 @@ deployCmd.action(async function (input, options) {
     nonce: '10',
     blockExpirationNumber: blockExpirationNumber2.toString(),
     category: {
-      enum: 2,
-      value: {
-        enum: 1,
-        value: {
+      type: 2,
+      data: {
+        type: 1,
+        data: {
           contractBytes: wasmFile.toString('base64'),
           abi: abi,
           contractHash: sha3256.create().update(wasmFile.buffer).hex(),
