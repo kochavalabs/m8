@@ -1,13 +1,1 @@
-node_modules/
-dist/
-signing.wasm
-types.js
-XchngContract.json
-src/types.js
-types/
-contract.wasm
-types.js
-abi.json
-mazzaroth
-deploy.json
-.npmrc
+/mazzaroth-cli
