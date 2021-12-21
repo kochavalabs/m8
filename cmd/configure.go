@@ -41,9 +41,8 @@ func configure() *cobra.Command {
 			// Default config location $HOME
 			dirname, err := os.UserHomeDir()
 			if err != nil {
-				log.Fatal(err)
+				zlogger.Debug(err.Error())
 			}
-
 			// Configuration Directory Prompt
 			cfgDirPrompt := promptui.Prompt{
 				Label: "Configuration Directory",
@@ -227,7 +226,6 @@ func configure() *cobra.Command {
 		},
 	}
 
-	config.AddCommand(initCfg)
-	config.AddCommand(cfgChannel)
+	config.AddCommand(initCfg, cfgChannel)
 	return config
 }

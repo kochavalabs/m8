@@ -3,10 +3,12 @@ module github.com/kochavalabs/mazzaroth-cli
 go 1.16
 
 require (
-	github.com/kochavalabs/crypto v0.0.0-20210414182029-6a8321e05fdc
+	github.com/kochavalabs/crypto v0.1.1
+	github.com/kochavalabs/mazzaroth-go v0.7.0
 	github.com/manifoldco/promptui v0.8.0
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.9.0
 	go.uber.org/zap v1.19.1
+	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	gopkg.in/yaml.v2 v2.4.0
 )
