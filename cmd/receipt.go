@@ -40,6 +40,7 @@ func receiptCmdChain() *cobra.Command {
 		},
 	}
 	receiptLookupCmd.Flags().String(transactionid, "", "transaction id assoicated to the receipt being looked up")
+	receiptLookupCmd.MarkFlagRequired(transactionid)
 
 	receiptRootCmd.AddCommand(receiptLookupCmd)
 	return receiptRootCmd

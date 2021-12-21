@@ -40,6 +40,7 @@ func transactionCmdChain() *cobra.Command {
 		},
 	}
 	transactionLookupCmd.Flags().String(transactionid, "", "id of the transaction being looked up")
+	transactionLookupCmd.MarkFlagRequired(transactionid)
 
 	transactionCallCmd := &cobra.Command{}
 	transactionConfigCmd := &cobra.Command{}

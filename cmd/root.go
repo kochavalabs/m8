@@ -12,7 +12,7 @@ func Execute() error {
 	// root command entry to application
 	rootCmd := &cobra.Command{
 		Use:   "m8",
-		Short: "Mazzaroth command line interface",
+		Short: "mazzaroth command line interface",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			// Bind Cobra flags with viper
 			if err := viper.BindPFlags(cmd.Flags()); err != nil {

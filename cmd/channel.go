@@ -43,7 +43,7 @@ func channelCmdChain() *cobra.Command {
 
 	channelConfigCmd := &cobra.Command{
 		Use:   "config",
-		Short: "return the configuration for a channel",
+		Short: "return the configuration active channel",
 		RunE: func(cmd *cobra.Command, args []string) error {
 
 			client, err := mazzaroth.NewMazzarothClient(mazzaroth.WithAddress(viper.GetString(address)))
