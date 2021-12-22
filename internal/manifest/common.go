@@ -1,6 +1,7 @@
 package manifest
 
 type Channel struct {
+	Version      string `yaml:"version,omitempty"`
 	Id           string `yaml:"id,omitempty"`
 	Owner        string `yaml:"owner,omitempty"`
 	ContractFile string `yaml:"contract-file,omitempty"`
