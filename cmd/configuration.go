@@ -11,37 +11,36 @@ import (
 	"github.com/kochavalabs/mazzaroth-cli/internal/cfg"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"go.uber.org/zap"
 	"gopkg.in/yaml.v2"
 )
 
 const (
-	configFileName = "/.mazzaroth-cli"
+	configFileName = `/.m8`
+	version        = `0.0.1`
 )
 
-func configure() *cobra.Command {
-	config := &cobra.Command{
+func configurationCmdChain() *cobra.Command {
+	cfgRootCmd := &cobra.Command{
 		Use:   "cfg",
-		Short: "Setup of the mazzaroth cli configurations and preferences",
+		Short: "returns mazzaroth cli configurations and preferences",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// todo
+			return nil
+		},
 	}
 
-	initCfg := &cobra.Command{
+	cfgInitCmd := &cobra.Command{
 		Use:   "init",
 		Short: "Initalize the mazzaroth cli configuration and preferences",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCfg := &cfg.Configuration{}
-			// Pull configured logger from viper registery
-			zlogger := viper.Get("logger").(*zap.Logger)
-			if zlogger == nil {
-				// if not logger was found, create a no-op logger
-				zlogger = zap.NewNop()
+			cliCfg := &cfg.Configuration{
+				User: &cfg.UserCfg{},
 			}
 
 			// Default config location $HOME
 			dirname, err := os.UserHomeDir()
 			if err != nil {
-				zlogger.Debug(err.Error())
+				return err
 			}
 			// Configuration Directory Prompt
 			cfgDirPrompt := promptui.Prompt{
@@ -58,18 +57,15 @@ func configure() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			zlogger.Debug(directory)
 
 			// Check if existing configuration exists
 			if _, err := os.Stat(directory + configFileName); !errors.Is(err, os.ErrNotExist) {
-				zlogger.Debug("file exists")
 				overwriteExistingPrompt := promptui.Prompt{
 					Label:     "Overwrite existing config at " + directory,
 					Default:   "n",
 					IsConfirm: true,
 				}
 				if v, err := overwriteExistingPrompt.Run(); err != nil || strings.ToLower(v) == "n" {
-					zlogger.Debug("exit to avoid config overwriting file")
 					return nil
 				}
 			}
@@ -84,8 +80,8 @@ func configure() *cobra.Command {
 			if err != nil {
 				// Prompt will return an error when confirmation is No
 				// log error in case there are other critical errors during prompt execution
-				zlogger.Debug(err.Error())
 			}
+
 			switch strings.ToLower(genKey) {
 			case "n":
 				// Prompt to set keys
@@ -125,16 +121,16 @@ func configure() *cobra.Command {
 				if err != nil {
 					return err
 				}
-				cliCfg.PrivateKey = priv
-				cliCfg.PublicKey = pub
+				cliCfg.User.PrivateKey = priv
+				cliCfg.User.PublicKey = pub
 			default: // default case is y
 				// Generate Key
 				priv, pub, err := crypto.GenerateEd25519KeyPair()
 				if err != nil {
 					return err
 				}
-				cliCfg.PrivateKey = crypto.ToHex(priv)
-				cliCfg.PublicKey = crypto.ToHex(pub)
+				cliCfg.User.PrivateKey = crypto.ToHex(priv)
+				cliCfg.User.PublicKey = crypto.ToHex(pub)
 			}
 
 			// Add Channel Prompt
@@ -147,11 +143,10 @@ func configure() *cobra.Command {
 			if err != nil {
 				// Prompt will return an error when confirmation is No
 				// log error in case there are other critical errors during prompt execution
-				zlogger.Debug("error" + err.Error())
 			}
+
 			switch strings.ToLower(addChannel) {
 			case "n":
-				zlogger.Debug("no channel to configure")
 			default: // default case is y
 				channelAliasPrompt := promptui.Prompt{
 					Label: "Channel Alias",
@@ -171,12 +166,13 @@ func configure() *cobra.Command {
 						// TODO :: Add public key format check
 						return nil
 					},
-					Default: "0x00000000000000000000000000000000000",
+					Default: "00000000000000000000000000000000000",
 				}
 				channelID, err := channelIDPrompt.Run()
 				if err != nil {
 					return err
 				}
+
 				channelURLPrompt := promptui.Prompt{
 					Label: "Channel Url",
 					Validate: func(input string) error {
@@ -190,16 +186,22 @@ func configure() *cobra.Command {
 					return err
 				}
 
-				channelCfg := cfg.ChannelConfiguration{
-					ChannelURL:   channelUrl,
-					ChannelID:    channelID,
-					ChannelAlias: channelAlias,
+				channelCfg := cfg.ChannelCfg{
+					Channel: cfg.Channel{
+						ChannelURL:   channelUrl,
+						ChannelID:    channelID,
+						ChannelAlias: channelAlias,
+					},
 				}
-				channels := make([]cfg.ChannelConfiguration, 0, 0)
+
+				channels := make([]cfg.ChannelCfg, 0, 0)
+				channels = append(channels, channelCfg)
 				channels = append(channels, channelCfg)
 				cliCfg.Channels = channels
-				cliCfg.ActiveChannel = channelAlias
+				cliCfg.User.ActiveChannel = channelAlias
 			}
+
+			cliCfg.Version = version
 
 			d, err := yaml.Marshal(&cliCfg)
 			if err != nil {
@@ -210,7 +212,6 @@ func configure() *cobra.Command {
 				return err
 			}
 
-			zlogger.Debug("done")
 			return nil
 		},
 	}
@@ -226,6 +227,6 @@ func configure() *cobra.Command {
 		},
 	}
 
-	config.AddCommand(initCfg, cfgChannel)
-	return config
+	cfgRootCmd.AddCommand(cfgInitCmd, cfgChannel)
+	return cfgRootCmd
 }

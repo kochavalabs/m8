@@ -14,6 +14,8 @@ func Execute() error {
 		Use:   "m8",
 		Short: "mazzaroth command line interface",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			viper.AddConfigPath(defaultCfgPath)
+
 			// Bind Cobra flags with viper
 			if err := viper.BindPFlags(cmd.Flags()); err != nil {
 				return err
@@ -45,9 +47,9 @@ func Execute() error {
 	////// list
 	rootCmd.AddCommand(blockCmdChain())
 	rootCmd.AddCommand(channelCmdChain())
-	rootCmd.AddCommand(configure())
+	rootCmd.AddCommand(configurationCmdChain())
 	rootCmd.AddCommand(receiptCmdChain())
-	rootCmd.PersistentFlags().String(cfgPath, "$HOME/.m8", "location of the mazzaroth config file")
+	rootCmd.PersistentFlags().String(cfgPath, defaultCfgPath, "location of the mazzaroth config file")
 	rootCmd.PersistentFlags().String(channelId, "", "defaults to the active channel id in the cfg")
 	rootCmd.PersistentFlags().String(address, "", "defaults to active channel address in the cfg")
 

@@ -43,9 +43,8 @@ func transactionCmdChain() *cobra.Command {
 	transactionLookupCmd.MarkFlagRequired(transactionid)
 
 	transactionCallCmd := &cobra.Command{}
-	transactionConfigCmd := &cobra.Command{}
 	transactionContractCmd := &cobra.Command{}
 
-	transactionRootCmd.AddCommand(transactionLookupCmd, transactionCallCmd, transactionConfigCmd, transactionContractCmd)
+	transactionRootCmd.AddCommand(transactionLookupCmd, transactionCallCmd, transactionContractCmd)
 	return transactionRootCmd
 }

@@ -1,9 +1,11 @@
 package cmd
 
 const (
+	defaultCfgPath = `$HOME/.m8`
+
 	// Flags/Env
 	// Environment variables are expected to be ALL CAPS
-	cfgPath       = "cfg"
+	cfgPath       = `cfg`
 	channelId     = `channel-id`
 	address       = `address`
 	transactionid = `tx-id`
