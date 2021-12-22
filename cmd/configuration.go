@@ -22,11 +22,7 @@ const (
 func configurationCmdChain() *cobra.Command {
 	cfgRootCmd := &cobra.Command{
 		Use:   "cfg",
-		Short: "returns mazzaroth cli configurations and preferences",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			// todo
-			return nil
-		},
+		Short: "mazzaroth cli configurations and preferences",
 	}
 
 	cfgInitCmd := &cobra.Command{
@@ -176,7 +172,7 @@ func configurationCmdChain() *cobra.Command {
 				channelURLPrompt := promptui.Prompt{
 					Label: "Channel Url",
 					Validate: func(input string) error {
-						// TODO :: Add public key format check
+
 						return nil
 					},
 					Default: "http://localhost:8080",
@@ -218,7 +214,7 @@ func configurationCmdChain() *cobra.Command {
 
 	cfgChannel := &cobra.Command{
 		Use:   "channel",
-		Short: "Configure a channel connection",
+		Short: "configure a mazzaroth channel",
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			return nil
 		},
