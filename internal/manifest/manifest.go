@@ -32,6 +32,43 @@ type Tx struct {
 	Tx Transaction `yaml:"tx"`
 }
 
+func loadAbi(path string) (*xdr.Abi, error) {
+	abiFile, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	abi := &xdr.Abi{}
+	if err := json.Unmarshal(abiFile, abi); err != nil {
+		return nil, err
+	}
+	return abi, nil
+}
+
+func loadContract(path string) ([]byte, error) {
+	contractFile, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	return contractFile, nil
+}
+
+// TODO must replace with WS Connection, P2P, or sync tx execution to prevent polling
+func pollForReceipt(channelId string, transactionId string, client mazzaroth.Client) (*xdr.Receipt, error) {
+	retry := 0
+	for {
+		receipt, err := client.ReceiptLookup(context.Background(), channelId, transactionId)
+		if err != nil {
+			if retry != maxRetry {
+				retry++
+				time.Sleep(time.Second * 5)
+				continue
+			}
+			return nil, err
+		}
+		return receipt, nil
+	}
+}
+
 func FromFile(path string, manifestType string) ([]*Manifest, error) {
 	manifestFile, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -172,41 +209,4 @@ func ExecuteTests(ctx context.Context, manifests []*Manifest, client mazzaroth.C
 		}
 	}
 	return nil
-}
-
-func loadAbi(path string) (*xdr.Abi, error) {
-	abiFile, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	abi := &xdr.Abi{}
-	if err := json.Unmarshal(abiFile, abi); err != nil {
-		return nil, err
-	}
-	return abi, nil
-}
-
-func loadContract(path string) ([]byte, error) {
-	contractFile, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	return contractFile, nil
-}
-
-// TODO must replace with WS Connection, P2P, or sync tx execution to prevent polling
-func pollForReceipt(channelId string, transactionId string, client mazzaroth.Client) (*xdr.Receipt, error) {
-	retry := 0
-	for {
-		receipt, err := client.ReceiptLookup(context.Background(), channelId, transactionId)
-		if err != nil {
-			if retry != maxRetry {
-				retry++
-				time.Sleep(time.Second * 5)
-				continue
-			}
-			return nil, err
-		}
-		return receipt, nil
-	}
 }
