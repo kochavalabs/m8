@@ -9,10 +9,15 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"time"
 
 	"github.com/kochavalabs/mazzaroth-go"
 	"github.com/kochavalabs/mazzaroth-xdr/xdr"
 	"gopkg.in/yaml.v2"
+)
+
+const (
+	maxRetry = 10
 )
 
 type Manifest struct {
@@ -84,11 +89,18 @@ func ExecuteDeployments(ctx context.Context, manifests []*Manifest, client mazza
 			return err
 		}
 
-		id, rcpt, err := client.TransactionSubmit(ctx, tx)
+		id, _, err := client.TransactionSubmit(ctx, tx)
 		if err != nil {
 			return err
 		}
-		fmt.Println(id, rcpt)
+
+		fmt.Println("Contract Deployed:transaction id:", id)
+		receipt, err := pollForReceipt(m.Channel.Id, fmt.Sprintf("%b", id), client)
+		if err != nil {
+			return err
+		}
+		receiptJson, err := json.MarshalIndent(receipt, "", "\t")
+		fmt.Println("Contract Deployment Complete:receipt:", string(receiptJson))
 
 		for _, t := range m.Transactions {
 			args := make([]xdr.Argument, 0, 0)
@@ -102,11 +114,61 @@ func ExecuteDeployments(ctx context.Context, manifests []*Manifest, client mazza
 			if err != nil {
 				return err
 			}
-			id, rcpt, err := client.TransactionSubmit(ctx, tx)
+			id, _, err := client.TransactionSubmit(ctx, tx)
 			if err != nil {
 				return err
 			}
-			fmt.Println(id, rcpt)
+			fmt.Println("transaction submitted:id:", fmt.Sprintf("%s", id))
+			receipt, err := pollForReceipt(m.Channel.Id, fmt.Sprintf("%s", id), client)
+			if err != nil {
+				return err
+			}
+			receiptJson, err := json.MarshalIndent(receipt, "", "\t")
+			fmt.Println("transaction complete:receipt:", string(receiptJson))
+		}
+	}
+	return nil
+}
+
+func ExecuteTests(ctx context.Context, manifests []*Manifest, client mazzaroth.Client, sender string, privKey ed25519.PrivateKey) error {
+	for _, m := range manifests {
+		if m.Type != "test" {
+			continue
+		}
+
+		senderId, err := xdr.IDFromHexString(sender)
+		if err != nil {
+			return err
+		}
+
+		channelId, err := xdr.IDFromHexString(m.Channel.Id)
+		if err != nil {
+			return err
+		}
+
+		for _, t := range m.Transactions {
+			args := make([]xdr.Argument, 0, 0)
+			if len(t.Tx.Args) > 0 {
+				for _, a := range t.Tx.Args {
+					args = append(args, xdr.Argument(a))
+				}
+			}
+			tx, err := mazzaroth.Transaction(&senderId, &channelId).
+				Call(0, 0).Function(t.Tx.Function).Arguments(args...).Sign(privKey)
+			if err != nil {
+				return err
+			}
+			id, _, err := client.TransactionSubmit(ctx, tx)
+			if err != nil {
+				return err
+			}
+			fmt.Println("transaction submitted:id:", fmt.Sprintf("%s", id))
+			receipt, err := pollForReceipt(m.Channel.Id, fmt.Sprintf("%s", id), client)
+			if err != nil {
+				return err
+			}
+			receiptJson, err := json.MarshalIndent(receipt, "", "\t")
+			fmt.Println("transaction complete:receipt:", string(receiptJson))
 		}
 	}
 	return nil
@@ -130,4 +192,21 @@ func loadContract(path string) ([]byte, error) {
 		return nil, err
 	}
 	return contractFile, nil
+}
+
+// TODO must replace with WS Connection, P2P, or sync tx execution to prevent polling
+func pollForReceipt(channelId string, transactionId string, client mazzaroth.Client) (*xdr.Receipt, error) {
+	retry := 0
+	for {
+		receipt, err := client.ReceiptLookup(context.Background(), channelId, transactionId)
+		if err != nil {
+			if retry != maxRetry {
+				retry++
+				time.Sleep(time.Second * 5)
+				continue
+			}
+			return nil, err
+		}
+		return receipt, nil
+	}
 }
