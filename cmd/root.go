@@ -48,7 +48,6 @@ func Execute() error {
 	rootCmd.AddCommand(blockCmdChain())
 	rootCmd.AddCommand(channelCmdChain())
 	rootCmd.AddCommand(configurationCmdChain())
-	rootCmd.AddCommand(deployCmdChain())
 	rootCmd.AddCommand(receiptCmdChain())
 	rootCmd.PersistentFlags().String(cfgPath, defaultCfgPath, "location of the mazzaroth config file")
 	rootCmd.PersistentFlags().String(channelId, "", "defaults to the active channel id in the cfg")

@@ -212,17 +212,6 @@ func configurationCmdChain() *cobra.Command {
 		},
 	}
 
-	cfgChannel := &cobra.Command{
-		Use:   "channel",
-		Short: "configure a mazzaroth channel",
-		PreRunE: func(cmd *cobra.Command, args []string) error {
-			return nil
-		},
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return nil
-		},
-	}
-
-	cfgRootCmd.AddCommand(cfgInitCmd, cfgChannel)
+	cfgRootCmd.AddCommand(cfgInitCmd)
 	return cfgRootCmd
 }

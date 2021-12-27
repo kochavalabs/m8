@@ -3,6 +3,7 @@ package cmd
 const (
 	defaultCfgPath                = `$HOME/.m8`
 	defaultDeploymentManifestPath = `./m8/deployment.yaml`
+	defaultTestManifestPath       = `.m8/test.yaml`
 	// Flags/Env
 	// Environment variables are expected to be ALL CAPS
 	cfgPath                = `cfg`
@@ -15,4 +16,5 @@ const (
 	number                 = `number`
 	height                 = `height`
 	deploymentManifestPath = `deployment-manifest`
+	testManifestPath       = `test-manifest`
 )

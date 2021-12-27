@@ -2,9 +2,12 @@ package cmd
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"os"
 
 	"github.com/kochavalabs/crypto"
+	"github.com/kochavalabs/mazzaroth-cli/internal/manifest"
 	"github.com/kochavalabs/mazzaroth-go"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -67,9 +70,9 @@ func channelCmdChain() *cobra.Command {
 		},
 	}
 
-	channelCreateCmd := &cobra.Command{
-		Use:   "create",
-		Short: "create a mazzaroth channel",
+	channelGenCmd := &cobra.Command{
+		Use:   "gen",
+		Short: "generate a mazzaroth channel",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// Generate Key
 			_, pub, err := crypto.GenerateEd25519KeyPair()
@@ -84,6 +87,69 @@ func channelCmdChain() *cobra.Command {
 		},
 	}
 
-	channelRootCmd.AddCommand(channelAbiCmd, channelCfgCmd, channelCreateCmd)
+	channelDeployCmd := &cobra.Command{
+		Use:   "deploy",
+		Short: "deploy a channel contract to mazzaroth nodes",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			manifestPath := viper.GetString(deploymentManifestPath)
+			// check if file is in default path
+			if _, err := os.Stat(manifestPath); errors.Is(err, os.ErrNotExist) {
+				return errors.New("unable to locate deployment manifest")
+			}
+
+			manifests, err := manifest.FromFile(manifestPath, "deployment")
+			if err != nil {
+				return err
+			}
+
+			client, err := mazzaroth.NewMazzarothClient(mazzaroth.WithAddress(viper.GetString(address)))
+			if err != nil {
+				return err
+			}
+
+			if err := manifest.ExecuteDeployments(cmd.Context(), manifests, client, "", nil); err != nil {
+				return err
+			}
+			return nil
+		},
+	}
+	channelDeployCmd.Flags().String(deploymentManifestPath, defaultDeploymentManifestPath, "location of mazzaroth channel deployment manifest")
+
+	channelTestCmd := &cobra.Command{
+		Use:   "test",
+		Short: "test channel contracts on mazzaroth nodes",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			manifestPath := viper.GetString(deploymentManifestPath)
+			// check if file is in default path
+			if _, err := os.Stat(manifestPath); errors.Is(err, os.ErrNotExist) {
+				return errors.New("unable to locate test manifest")
+			}
+
+			manifests, err := manifest.FromFile(manifestPath, "test")
+			if err != nil {
+				return err
+			}
+
+			client, err := mazzaroth.NewMazzarothClient(mazzaroth.WithAddress(viper.GetString(address)))
+			if err != nil {
+				return err
+			}
+
+			if err := manifest.ExecuteTests(cmd.Context(), manifests, client, "", nil); err != nil {
+				return err
+			}
+
+			return nil
+		},
+	}
+	channelTestCmd.Flags().String(testManifestPath, defaultTestManifestPath, "location of mazzaroth channel test manifest")
+
+	channelRootCmd.AddCommand(
+		channelAbiCmd,
+		channelCfgCmd,
+		channelGenCmd,
+		channelDeployCmd,
+		channelTestCmd,
+	)
 	return channelRootCmd
 }
