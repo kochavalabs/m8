@@ -1,2 +1,2 @@
 build:
-        go build -o bin/m8 . 
+	go build -o bin/m8 . 
