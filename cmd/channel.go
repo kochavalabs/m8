@@ -45,31 +45,6 @@ func channelCmdChain() *cobra.Command {
 		},
 	}
 
-	channelCfgCmd := &cobra.Command{
-		Use:   "cfg",
-		Short: "return the configuration active channel",
-		RunE: func(cmd *cobra.Command, args []string) error {
-
-			client, err := mazzaroth.NewMazzarothClient(mazzaroth.WithAddress(viper.GetString(address)))
-			if err != nil {
-				return err
-			}
-
-			config, err := client.ChannelConfig(cmd.Context(), viper.GetString(channelId))
-			if err != nil {
-				return err
-			}
-
-			v, err := json.MarshalIndent(config, "", "\t")
-			if err != nil {
-				return err
-			}
-
-			fmt.Println(string(v))
-			return nil
-		},
-	}
-
 	channelGenCmd := &cobra.Command{
 		Use:   "gen",
 		Short: "generate a mazzaroth channel",
@@ -146,7 +121,6 @@ func channelCmdChain() *cobra.Command {
 
 	channelRootCmd.AddCommand(
 		channelAbiCmd,
-		channelCfgCmd,
 		channelGenCmd,
 		channelDeployCmd,
 		channelTestCmd,

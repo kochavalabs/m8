@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/kochavalabs/mazzaroth-go"
-	"github.com/kochavalabs/mazzaroth-xdr/xdr"
+	"github.com/kochavalabs/mazzaroth-xdr/go-xdr/xdr"
 	"gopkg.in/yaml.v2"
 )
 
@@ -121,7 +121,7 @@ func ExecuteDeployments(ctx context.Context, manifests []*Manifest, client mazza
 		}
 
 		tx, err := mazzaroth.Transaction(&senderId, &channelId).
-			Contract(0, 0).Abi(abi).ContractBytes(contract).Version(m.Channel.Version).Sign(privKey)
+			Contract(0, 0).Deploy(m.Channel.Version, *abi, contract).Sign(privKey)
 		if err != nil {
 			return err
 		}
