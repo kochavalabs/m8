@@ -42,9 +42,14 @@ func transactionCmdChain() *cobra.Command {
 	transactionLookupCmd.Flags().String(transactionid, "", "id of the transaction being looked up")
 	transactionLookupCmd.MarkFlagRequired(transactionid)
 
-	transactionCallCmd := &cobra.Command{}
-	transactionContractCmd := &cobra.Command{}
+	transactionCallCmd := &cobra.Command{
+		Use:   "call",
+		Short: "call functions on a mazzaroth channel",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return nil
+		},
+	}
 
-	transactionRootCmd.AddCommand(transactionLookupCmd, transactionCallCmd, transactionContractCmd)
+	transactionRootCmd.AddCommand(transactionLookupCmd, transactionCallCmd)
 	return transactionRootCmd
 }

@@ -17,7 +17,8 @@ import (
 )
 
 const (
-	maxRetry = 10
+	maxRetry                     = 10
+	defaultBlockExpirationNumber = 5
 )
 
 type Manifest struct {
@@ -119,9 +120,9 @@ func ExecuteDeployments(ctx context.Context, manifests []*Manifest, client mazza
 		if err != nil {
 			return err
 		}
-
-		tx, err := mazzaroth.Transaction(&senderId, &channelId).
-			Contract(0, 0).Deploy(m.Channel.Version, *abi, contract).Sign(privKey)
+		nonce := mazzaroth.GenerateNonce()
+		tx, err := mazzaroth.Transaction(senderId, channelId).
+			Contract(nonce, defaultBlockExpirationNumber).Deploy(m.Channel.Version, abi, contract).Sign(privKey)
 		if err != nil {
 			return err
 		}
@@ -131,13 +132,13 @@ func ExecuteDeployments(ctx context.Context, manifests []*Manifest, client mazza
 			return err
 		}
 
-		fmt.Println("Contract Deployed:transaction id:", id)
+		fmt.Println("contract deployed:transaction id:", id)
 		receipt, err := pollForReceipt(m.Channel.Id, fmt.Sprintf("%b", id), client)
 		if err != nil {
 			return err
 		}
 		receiptJson, err := json.MarshalIndent(receipt, "", "\t")
-		fmt.Println("Contract Deployment Complete:receipt:", string(receiptJson))
+		fmt.Println("contract deployment complete:receipt:", string(receiptJson))
 
 		for _, t := range m.Transactions {
 			args := make([]xdr.Argument, 0, 0)
@@ -146,7 +147,7 @@ func ExecuteDeployments(ctx context.Context, manifests []*Manifest, client mazza
 					args = append(args, xdr.Argument(a))
 				}
 			}
-			tx, err := mazzaroth.Transaction(&senderId, &channelId).
+			tx, err := mazzaroth.Transaction(senderId, channelId).
 				Call(0, 0).Function(t.Tx.Function).Arguments(args...).Sign(privKey)
 			if err != nil {
 				return err
@@ -190,7 +191,7 @@ func ExecuteTests(ctx context.Context, manifests []*Manifest, client mazzaroth.C
 					args = append(args, xdr.Argument(a))
 				}
 			}
-			tx, err := mazzaroth.Transaction(&senderId, &channelId).
+			tx, err := mazzaroth.Transaction(senderId, channelId).
 				Call(0, 0).Function(t.Tx.Function).Arguments(args...).Sign(privKey)
 			if err != nil {
 				return err

@@ -9,6 +9,7 @@ import (
 	"github.com/kochavalabs/crypto"
 	"github.com/kochavalabs/mazzaroth-cli/internal/manifest"
 	"github.com/kochavalabs/mazzaroth-go"
+	"github.com/kochavalabs/mazzaroth-xdr/go-xdr/xdr"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -62,9 +63,44 @@ func channelCmdChain() *cobra.Command {
 		},
 	}
 
+	channelDeleteCmd := &cobra.Command{
+		Use:   "delete",
+		Short: "delete a channel contract",
+		RunE: func(cmd *cobra.Command, args []string) error {
+
+			sender, err := xdr.IDFromHexString(viper.GetString("public-key"))
+			if err != nil {
+				return err
+			}
+
+			channelId, err := xdr.IDFromHexString(viper.GetString("active-channel"))
+			if err != nil {
+				return err
+			}
+
+			tx, err := mazzaroth.Transaction(sender, channelId).Contract(mazzaroth.GenerateNonce(), defaultBlockExpirationNumber).Delete().Sign(nil)
+			if err != nil {
+				return err
+			}
+
+			client, err := mazzaroth.NewMazzarothClient(mazzaroth.WithAddress(viper.GetString(address)))
+			if err != nil {
+				return err
+			}
+
+			id, _, err := client.TransactionSubmit(cmd.Context(), tx)
+			if err != nil {
+				return err
+			}
+
+			fmt.Println("transaction id:", id)
+			return nil
+		},
+	}
+
 	channelDeployCmd := &cobra.Command{
 		Use:   "deploy",
-		Short: "deploy a channel contract to mazzaroth nodes",
+		Short: "deploy a channel contract to mazzaroth nodes from a given manifest",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			manifestPath := viper.GetString(deploymentManifestPath)
 			// check if file is in default path
@@ -89,6 +125,44 @@ func channelCmdChain() *cobra.Command {
 		},
 	}
 	channelDeployCmd.Flags().String(deploymentManifestPath, defaultDeploymentManifestPath, "location of mazzaroth channel deployment manifest")
+
+	channelPauseCmd := &cobra.Command{
+		Use:   "pause",
+		Short: "pause/unpause a channel contract",
+		RunE: func(cmd *cobra.Command, args []string) error {
+
+			sender, err := xdr.IDFromHexString(viper.GetString("public-key"))
+			if err != nil {
+				return err
+			}
+
+			channelId, err := xdr.IDFromHexString(viper.GetString("active-channel"))
+			if err != nil {
+				return err
+			}
+
+			tx, err := mazzaroth.Transaction(sender, channelId).Contract(mazzaroth.GenerateNonce(), defaultBlockExpirationNumber).
+				Pause(viper.GetBool(pause)).
+				Sign(nil)
+			if err != nil {
+				return err
+			}
+
+			client, err := mazzaroth.NewMazzarothClient(mazzaroth.WithAddress(viper.GetString(address)))
+			if err != nil {
+				return err
+			}
+
+			id, _, err := client.TransactionSubmit(cmd.Context(), tx)
+			if err != nil {
+				return err
+			}
+
+			fmt.Println("transaction id:", id)
+			return nil
+		},
+	}
+	channelPauseCmd.Flags().Bool(pause, false, "pause transactions from being sent")
 
 	channelTestCmd := &cobra.Command{
 		Use:   "test",
@@ -122,7 +196,9 @@ func channelCmdChain() *cobra.Command {
 	channelRootCmd.AddCommand(
 		channelAbiCmd,
 		channelGenCmd,
+		channelDeleteCmd,
 		channelDeployCmd,
+		channelPauseCmd,
 		channelTestCmd,
 	)
 	return channelRootCmd

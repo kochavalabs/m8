@@ -1,6 +1,7 @@
 package cmd
 
 const (
+	defaultBlockExpirationNumber  = 5
 	defaultCfgPath                = `$HOME/.m8`
 	defaultDeploymentManifestPath = `./m8/deployment.yaml`
 	defaultTestManifestPath       = `.m8/test.yaml`
@@ -17,4 +18,5 @@ const (
 	height                 = `height`
 	deploymentManifestPath = `deployment-manifest`
 	testManifestPath       = `test-manifest`
+	pause                  = `pause`
 )

@@ -137,9 +137,9 @@ func blockCmdChain() *cobra.Command {
 			}
 		},
 	}
-	blockLookupCmd.Flags().Bool(headers, false, "option to return list of block headers")
-	blockLookupCmd.Flags().Bool(blocks, true, "option to return list of blocks")
-	blockLookupCmd.Flags().String(blockid, "", "starting block height value")
+	blockLookupCmd.Flags().Bool(headers, false, "option to return block header")
+	blockLookupCmd.Flags().Bool(blocks, true, "option to return block")
+	blockLookupCmd.Flags().String(blockid, "", "id of block")
 	blockLookupCmd.MarkFlagRequired(blockid)
 
 	blockRootCmd.AddCommand(blockHeightCmd, blockListCmd, blockLookupCmd)
