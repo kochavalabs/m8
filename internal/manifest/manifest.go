@@ -38,10 +38,12 @@ func loadAbi(path string) (*xdr.Abi, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	abi := &xdr.Abi{}
 	if err := json.Unmarshal(abiFile, abi); err != nil {
 		return nil, err
 	}
+
 	return abi, nil
 }
 
@@ -64,6 +66,7 @@ func pollForReceipt(channelId string, transactionId string, client mazzaroth.Cli
 				time.Sleep(time.Second * 5)
 				continue
 			}
+			// return first error
 			return nil, err
 		}
 		return receipt, nil
@@ -111,6 +114,11 @@ func ExecuteDeployments(ctx context.Context, manifests []*Manifest, client mazza
 			return err
 		}
 
+		owner, err := xdr.IDFromHexString(m.Channel.Owner)
+		if err != nil {
+			return err
+		}
+
 		abi, err := loadAbi(m.Channel.AbiFile)
 		if err != nil {
 			return err
@@ -120,9 +128,10 @@ func ExecuteDeployments(ctx context.Context, manifests []*Manifest, client mazza
 		if err != nil {
 			return err
 		}
+
 		nonce := mazzaroth.GenerateNonce()
 		tx, err := mazzaroth.Transaction(senderId, channelId).
-			Contract(nonce, defaultBlockExpirationNumber).Deploy(m.Channel.Version, abi, contract).Sign(privKey)
+			Contract(nonce, defaultBlockExpirationNumber).Deploy(owner, m.Channel.Version, abi, contract).Sign(privKey)
 		if err != nil {
 			return err
 		}
@@ -137,6 +146,7 @@ func ExecuteDeployments(ctx context.Context, manifests []*Manifest, client mazza
 		if err != nil {
 			return err
 		}
+
 		receiptJson, err := json.MarshalIndent(receipt, "", "\t")
 		fmt.Println("contract deployment complete:receipt:", string(receiptJson))
 
@@ -147,20 +157,24 @@ func ExecuteDeployments(ctx context.Context, manifests []*Manifest, client mazza
 					args = append(args, xdr.Argument(a))
 				}
 			}
+
 			tx, err := mazzaroth.Transaction(senderId, channelId).
 				Call(0, 0).Function(t.Tx.Function).Arguments(args...).Sign(privKey)
 			if err != nil {
 				return err
 			}
+
 			id, _, err := client.TransactionSubmit(ctx, tx)
 			if err != nil {
 				return err
 			}
+
 			fmt.Println("transaction submitted:id:", fmt.Sprintf("%s", id))
 			receipt, err := pollForReceipt(m.Channel.Id, fmt.Sprintf("%s", id), client)
 			if err != nil {
 				return err
 			}
+
 			receiptJson, err := json.MarshalIndent(receipt, "", "\t")
 			fmt.Println("transaction complete:receipt:", string(receiptJson))
 		}
@@ -191,20 +205,24 @@ func ExecuteTests(ctx context.Context, manifests []*Manifest, client mazzaroth.C
 					args = append(args, xdr.Argument(a))
 				}
 			}
+
 			tx, err := mazzaroth.Transaction(senderId, channelId).
 				Call(0, 0).Function(t.Tx.Function).Arguments(args...).Sign(privKey)
 			if err != nil {
 				return err
 			}
+
 			id, _, err := client.TransactionSubmit(ctx, tx)
 			if err != nil {
 				return err
 			}
+
 			fmt.Println("transaction submitted:id:", fmt.Sprintf("%s", id))
 			receipt, err := pollForReceipt(m.Channel.Id, fmt.Sprintf("%s", id), client)
 			if err != nil {
 				return err
 			}
+
 			receiptJson, err := json.MarshalIndent(receipt, "", "\t")
 			fmt.Println("transaction complete:receipt:", string(receiptJson))
 		}

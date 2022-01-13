@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"strings"
 
@@ -11,12 +11,8 @@ import (
 	"github.com/kochavalabs/mazzaroth-cli/internal/cfg"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"gopkg.in/yaml.v2"
-)
-
-const (
-	configFileName = `/.m8`
-	version        = `0.0.1`
 )
 
 func configurationCmdChain() *cobra.Command {
@@ -28,17 +24,22 @@ func configurationCmdChain() *cobra.Command {
 	cfgInitCmd := &cobra.Command{
 		Use:   "init",
 		Short: "Initalize the mazzaroth cli configuration and preferences",
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			// this is here to overwrite the root persistentPreRunE
+			return nil
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCfg := &cfg.Configuration{
 				User: &cfg.UserCfg{},
 			}
 
-			// Default config location $HOME
+			// default config location
 			dirname, err := os.UserHomeDir()
 			if err != nil {
 				return err
 			}
-			// Configuration Directory Prompt
+
+			// configuration directory prompt
 			cfgDirPrompt := promptui.Prompt{
 				Label: "Configuration Directory",
 				Validate: func(input string) error {
@@ -49,13 +50,15 @@ func configurationCmdChain() *cobra.Command {
 				},
 				Default: dirname,
 			}
+
 			directory, err := cfgDirPrompt.Run()
 			if err != nil {
+				fmt.Println("here")
 				return err
 			}
 
-			// Check if existing configuration exists
-			if _, err := os.Stat(directory + configFileName); !errors.Is(err, os.ErrNotExist) {
+			// check if existing configuration exists
+			if _, err := os.Stat(directory + cfgDir + cfgName); !errors.Is(err, os.ErrNotExist) {
 				overwriteExistingPrompt := promptui.Prompt{
 					Label:     "Overwrite existing config at " + directory,
 					Default:   "n",
@@ -66,7 +69,7 @@ func configurationCmdChain() *cobra.Command {
 				}
 			}
 
-			// Key Generation
+			// key generation
 			keyGenPrompt := promptui.Prompt{
 				Label:     "Generate Key Pair",
 				Default:   "y",
@@ -74,17 +77,20 @@ func configurationCmdChain() *cobra.Command {
 			}
 			genKey, err := keyGenPrompt.Run()
 			if err != nil {
-				// Prompt will return an error when confirmation is No
+				// prompt will return an error when confirmation is No
 				// log error in case there are other critical errors during prompt execution
 			}
 
 			switch strings.ToLower(genKey) {
 			case "n":
-				// Prompt to set keys
+				// prompt to set keys
 				privKeyPrompt := promptui.Prompt{
 					Label: "Add Private Key",
 					Validate: func(input string) error {
-						// TODO :: Add private key format check
+						// TODO :: add private key format check
+						if len(input) < 128 {
+							return errors.New("invalid private key length")
+						}
 						return nil
 					},
 					HideEntered: true,
@@ -121,7 +127,7 @@ func configurationCmdChain() *cobra.Command {
 				cliCfg.User.PublicKey = pub
 			default: // default case is y
 				// Generate Key
-				priv, pub, err := crypto.GenerateEd25519KeyPair()
+				pub, priv, err := crypto.GenerateEd25519KeyPair()
 				if err != nil {
 					return err
 				}
@@ -192,7 +198,6 @@ func configurationCmdChain() *cobra.Command {
 
 				channels := make([]cfg.ChannelCfg, 0, 0)
 				channels = append(channels, channelCfg)
-				channels = append(channels, channelCfg)
 				cliCfg.Channels = channels
 				cliCfg.User.ActiveChannel = channelAlias
 			}
@@ -201,10 +206,16 @@ func configurationCmdChain() *cobra.Command {
 
 			d, err := yaml.Marshal(&cliCfg)
 			if err != nil {
-				log.Fatalf("error: %v", err)
+				return err
 			}
 
-			if err := ioutil.WriteFile(directory+configFileName, d, 0644); err != nil {
+			if _, err := os.Stat(directory + cfgDir); errors.Is(err, os.ErrNotExist) {
+				if err := os.Mkdir(directory+cfgDir, 0755); err != nil {
+					return err
+				}
+			}
+
+			if err := ioutil.WriteFile(directory+cfgDir+cfgName, d, 0644); err != nil {
 				return err
 			}
 
@@ -212,6 +223,21 @@ func configurationCmdChain() *cobra.Command {
 		},
 	}
 
-	cfgRootCmd.AddCommand(cfgInitCmd)
+	cfgShowCmd := &cobra.Command{
+		Use:   "show",
+		Short: "display the current cfg file",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cfg := viper.Get("cfg").(*cfg.Configuration)
+			cfgYaml, err := yaml.Marshal(cfg)
+			if err != nil {
+				return err
+			}
+			fmt.Println(string(cfgYaml))
+			return nil
+		},
+	}
+	cfgShowCmd.Flags().String(cfgPath, "$HOME/.m8/cfg.yaml", "path to m8 cfg file")
+
+	cfgRootCmd.AddCommand(cfgInitCmd, cfgShowCmd)
 	return cfgRootCmd
 }

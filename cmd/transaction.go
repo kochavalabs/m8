@@ -46,9 +46,30 @@ func transactionCmdChain() *cobra.Command {
 		Use:   "call",
 		Short: "call functions on a mazzaroth channel",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			/*client, err := mazzaroth.NewMazzarothClient(mazzaroth.WithAddress(viper.GetString(address)))
+			if err != nil {
+				return err
+			}
+
+			sender, err := xdr.IDFromHexString(viper.GetString("pub-key"))
+			if err != nil {
+				return err
+			}
+
+			channelId, err := xdr.IDFromHexString(viper.GetString("active-channel"))
+			if err != nil {
+				return err
+			}
+
+			tx := mazzaroth.Transaction(sender, channelId)
+			*/
 			return nil
 		},
 	}
+	transactionCallCmd.Flags().String(function, "", "the function to be called")
+	//	transactionCallCmd.MarkFlagRequired(function)
+
+	transactionCallCmd.Flags().StringSlice(args, []string{""}, "the args to pass within the function")
 
 	transactionRootCmd.AddCommand(transactionLookupCmd, transactionCallCmd)
 	return transactionRootCmd

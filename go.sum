@@ -205,8 +205,8 @@ github.com/kisielk/errcheck v1.5.0/go.mod h1:pFxgyoBC7bSaBwPgfKdkLd5X25qrDl4LWUI
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/kochavalabs/crypto v0.1.2 h1:zyx7K032X5XD6Yehsd69mr7bPo6jXfvzgXgoL3T2zkk=
 github.com/kochavalabs/crypto v0.1.2/go.mod h1:qTHYQRl9gCAPCCXxCxpMbeNU7nV5VyFgMfPMDHcYlXA=
-github.com/kochavalabs/mazzaroth-go v0.8.2 h1:GULkGn2s/X+ieXBHMfEcJkhzcNAAnacrwu88176RiEM=
-github.com/kochavalabs/mazzaroth-go v0.8.2/go.mod h1:K/zohZrHLindO1tizKqIGzM0m4Fcgfvo15txe6RHTM8=
+github.com/kochavalabs/mazzaroth-go v0.8.3 h1:qTnFH7OhT2vKOtrZ6eF9+NZ8wKdTsaoU425Ksk10ucI=
+github.com/kochavalabs/mazzaroth-go v0.8.3/go.mod h1:K/zohZrHLindO1tizKqIGzM0m4Fcgfvo15txe6RHTM8=
 github.com/kochavalabs/mazzaroth-xdr v0.8.1 h1:bRniLspDfr1ng+hPrcWgfHj/YcVHANK/G2pXQhdatNM=
 github.com/kochavalabs/mazzaroth-xdr v0.8.1/go.mod h1:U8ldrJUaYONdpe2NwsGyNKY+OpFHwXpz8313by5kxtw=
 github.com/kr/fs v0.1.0/go.mod h1:FFnZGqtBN9Gxj7eW1uZ42v5BccTP0vu6NEaFoC2HwRg=
