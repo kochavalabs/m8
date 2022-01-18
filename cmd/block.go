@@ -20,7 +20,7 @@ func blockCmdChain() *cobra.Command {
 		Use:   "height",
 		Short: "return the block height of a given channel",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			client, err := mazzaroth.NewMazzarothClient(mazzaroth.WithAddress(viper.GetString(address)))
+			client, err := mazzaroth.NewMazzarothClient(mazzaroth.WithAddress(viper.GetString(channelAddress)))
 			if err != nil {
 				return err
 			}
@@ -47,7 +47,7 @@ func blockCmdChain() *cobra.Command {
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			client, err := mazzaroth.NewMazzarothClient(mazzaroth.WithAddress(viper.GetString(address)))
+			client, err := mazzaroth.NewMazzarothClient(mazzaroth.WithAddress(viper.GetString(channelAddress)))
 			if err != nil {
 				return err
 			}
@@ -98,7 +98,7 @@ func blockCmdChain() *cobra.Command {
 		Short: "return a block or block header for a given channel by id",
 		RunE: func(cmd *cobra.Command, args []string) error {
 
-			client, err := mazzaroth.NewMazzarothClient(mazzaroth.WithAddress(viper.GetString(address)))
+			client, err := mazzaroth.NewMazzarothClient(mazzaroth.WithAddress(viper.GetString(channelAddress)))
 			if err != nil {
 				return err
 			}

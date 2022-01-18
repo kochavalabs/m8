@@ -129,9 +129,8 @@ func ExecuteDeployments(ctx context.Context, manifests []*Manifest, client mazza
 			return err
 		}
 
-		nonce := mazzaroth.GenerateNonce()
 		tx, err := mazzaroth.Transaction(senderId, channelId).
-			Contract(nonce, defaultBlockExpirationNumber).Deploy(owner, m.Channel.Version, abi, contract).Sign(privKey)
+			Contract(mazzaroth.GenerateNonce(), defaultBlockExpirationNumber).Deploy(owner, m.Channel.Version, abi, contract).Sign(privKey)
 		if err != nil {
 			return err
 		}
@@ -159,7 +158,7 @@ func ExecuteDeployments(ctx context.Context, manifests []*Manifest, client mazza
 			}
 
 			tx, err := mazzaroth.Transaction(senderId, channelId).
-				Call(0, 0).Function(t.Tx.Function).Arguments(args...).Sign(privKey)
+				Call(mazzaroth.GenerateNonce(), defaultBlockExpirationNumber).Function(t.Tx.Function).Arguments(args...).Sign(privKey)
 			if err != nil {
 				return err
 			}
@@ -207,7 +206,7 @@ func ExecuteTests(ctx context.Context, manifests []*Manifest, client mazzaroth.C
 			}
 
 			tx, err := mazzaroth.Transaction(senderId, channelId).
-				Call(0, 0).Function(t.Tx.Function).Arguments(args...).Sign(privKey)
+				Call(mazzaroth.GenerateNonce(), defaultBlockExpirationNumber).Function(t.Tx.Function).Arguments(args...).Sign(privKey)
 			if err != nil {
 				return err
 			}

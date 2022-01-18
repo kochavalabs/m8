@@ -20,12 +20,12 @@ func receiptCmdChain() *cobra.Command {
 		Short: "lookup a receipt for a given channel by transaction id",
 		RunE: func(cmd *cobra.Command, args []string) error {
 
-			client, err := mazzaroth.NewMazzarothClient(mazzaroth.WithAddress(viper.GetString(address)))
+			client, err := mazzaroth.NewMazzarothClient(mazzaroth.WithAddress(viper.GetString(channelAddress)))
 			if err != nil {
 				return err
 			}
 
-			receipt, err := client.ReceiptLookup(cmd.Context(), viper.GetString(channelId), viper.GetString(transactionid))
+			receipt, err := client.ReceiptLookup(cmd.Context(), viper.GetString(channelId), viper.GetString(transactionId))
 			if err != nil {
 				return err
 			}
@@ -39,8 +39,8 @@ func receiptCmdChain() *cobra.Command {
 			return nil
 		},
 	}
-	receiptLookupCmd.Flags().String(transactionid, "", "transaction id assoicated to the receipt being looked up")
-	receiptLookupCmd.MarkFlagRequired(transactionid)
+	receiptLookupCmd.Flags().String(transactionId, "", "transaction id assoicated to the receipt being looked up")
+	receiptLookupCmd.MarkFlagRequired(transactionId)
 
 	receiptRootCmd.AddCommand(receiptLookupCmd)
 	return receiptRootCmd

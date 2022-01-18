@@ -3,7 +3,7 @@ module github.com/kochavalabs/mazzaroth-cli
 go 1.16
 
 require (
-	github.com/kochavalabs/crypto v0.1.2
+	github.com/kochavalabs/crypto v0.1.3
 	github.com/kochavalabs/mazzaroth-go v0.8.3
 	github.com/kochavalabs/mazzaroth-xdr v0.8.1
 	github.com/manifoldco/promptui v0.8.0
