@@ -72,12 +72,12 @@ func channelCmdChain() *cobra.Command {
 		Short: "delete a channel contract",
 		RunE: func(cmd *cobra.Command, args []string) error {
 
-			sender, err := xdr.IDFromHexString(viper.GetString("public-key"))
+			sender, err := xdr.IDFromHexString(viper.GetString(publicKey))
 			if err != nil {
 				return err
 			}
 
-			channelId, err := xdr.IDFromHexString(viper.GetString("active-channel"))
+			channelId, err := xdr.IDFromHexString(viper.GetString(channelId))
 			if err != nil {
 				return err
 			}
@@ -135,12 +135,12 @@ func channelCmdChain() *cobra.Command {
 		Short: "pause/unpause a channel contract",
 		RunE: func(cmd *cobra.Command, args []string) error {
 
-			sender, err := xdr.IDFromHexString(viper.GetString("public-key"))
+			sender, err := xdr.IDFromHexString(viper.GetString(publicKey))
 			if err != nil {
 				return err
 			}
 
-			channelId, err := xdr.IDFromHexString(viper.GetString("active-channel"))
+			channelId, err := xdr.IDFromHexString(viper.GetString(channelId))
 			if err != nil {
 				return err
 			}

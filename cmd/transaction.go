@@ -57,22 +57,26 @@ func transactionCmdChain() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			sender, err := xdr.IDFromHexString(viper.GetString("pub-key"))
+			sender, err := xdr.IDFromHexString(viper.GetString(publicKey))
 			if err != nil {
 				return err
 			}
 
-			channelId, err := xdr.IDFromHexString(viper.GetString("active-channel"))
+			channelId, err := xdr.IDFromHexString(viper.GetString(channelId))
 			if err != nil {
 				return err
 			}
 			xdrArgs := make([]xdr.Argument, 0, 0)
-			values := viper.GetStringSlice(arguements)
+			values := viper.GetStringSlice(arguments)
 			for _, a := range values {
 				xdrArgs = append(xdrArgs, xdr.Argument(a))
 			}
 
 			tx, err := mazzaroth.Transaction(sender, channelId).Call(mazzaroth.GenerateNonce(), defaultBlockExpirationNumber).Function(viper.GetString(function)).Arguments(xdrArgs...).Sign(pk)
+			if err != nil {
+				return err
+			}
+
 			id, rcpt, err := client.TransactionSubmit(cmd.Context(), tx)
 			if err != nil {
 				return err
@@ -95,7 +99,7 @@ func transactionCmdChain() *cobra.Command {
 	transactionCallCmd.Flags().String(function, "", "the function to be called")
 	transactionCallCmd.MarkFlagRequired(function)
 
-	transactionCallCmd.Flags().StringSlice(arguements, []string{""}, "the args to pass within the function")
+	transactionCallCmd.Flags().StringSlice(arguments, []string{""}, "the args to pass within the function")
 
 	transactionRootCmd.AddCommand(transactionLookupCmd, transactionCallCmd)
 	return transactionRootCmd

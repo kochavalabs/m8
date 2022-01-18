@@ -28,7 +28,7 @@ const (
 	number             = `number`
 	height             = `height`
 	function           = `fn`
-	arguements         = `args`
+	arguments          = `args`
 	deploymentManifest = `deployment-manifest`
 	testManifest       = `test-manifest`
 	pause              = `pause`
