@@ -82,7 +82,12 @@ func channelCmdChain() *cobra.Command {
 				return err
 			}
 
-			tx, err := mazzaroth.Transaction(sender, channelId).Contract(mazzaroth.GenerateNonce(), defaultBlockExpirationNumber).Delete().Sign(nil)
+			pk, err := crypto.FromHex(viper.GetString(privateKey))
+			if err != nil {
+				return err
+			}
+
+			tx, err := mazzaroth.Transaction(sender, channelId).Contract(mazzaroth.GenerateNonce(), defaultBlockExpirationNumber).Delete().Sign(pk)
 			if err != nil {
 				return err
 			}
@@ -112,6 +117,11 @@ func channelCmdChain() *cobra.Command {
 				return errors.New("unable to locate deployment manifest")
 			}
 
+			pk, err := crypto.FromHex(viper.GetString(privateKey))
+			if err != nil {
+				return err
+			}
+
 			manifests, err := manifest.FromFile(manifestPath, "deployment")
 			if err != nil {
 				return err
@@ -122,7 +132,7 @@ func channelCmdChain() *cobra.Command {
 				return err
 			}
 
-			if err := manifest.ExecuteDeployments(cmd.Context(), manifests, client, "", nil); err != nil {
+			if err := manifest.ExecuteDeployments(cmd.Context(), manifests, client, viper.GetString(publicKey), pk); err != nil {
 				return err
 			}
 			return nil
@@ -183,12 +193,17 @@ func channelCmdChain() *cobra.Command {
 				return err
 			}
 
+			pk, err := crypto.FromHex(viper.GetString(privateKey))
+			if err != nil {
+				return err
+			}
+
 			client, err := mazzaroth.NewMazzarothClient(mazzaroth.WithAddress(viper.GetString(channelAddress)))
 			if err != nil {
 				return err
 			}
 
-			if err := manifest.ExecuteTests(cmd.Context(), manifests, client, "", nil); err != nil {
+			if err := manifest.ExecuteTests(cmd.Context(), manifests, client, viper.GetString(publicKey), pk); err != nil {
 				return err
 			}
 
