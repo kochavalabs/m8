@@ -188,7 +188,7 @@ func channelCmdChain() *cobra.Command {
 		Use:   "test",
 		Short: "test channel contracts on mazzaroth nodes",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			manifestPath := viper.GetString(deploymentManifest)
+			manifestPath := viper.GetString(testManifest)
 			// check if file is in default path
 			if _, err := os.Stat(manifestPath); errors.Is(err, os.ErrNotExist) {
 				return errors.New("unable to locate test manifest")
