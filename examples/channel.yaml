@@ -30,3 +30,20 @@ transactions:
     function: "bar"
     args: ["1","2","3","4"]
     result: ["success"]
+--- 
+version: 0.0.1
+type: test 
+reset: true
+channel:
+  id: 0000000000000000000000000000000000000000000000000000000000000000
+gateway-node: 
+  address: https://localhost:8081
+transactions:
+  - tx:
+    function: "foo"
+    args: ["1","2","3","4"]
+    result: ["success"]
+  - tx:
+    function: "bar"
+    args: ["1","2","3","4"]
+    result: ["success"]

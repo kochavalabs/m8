@@ -1,7 +1,11 @@
 version: 0.0.1
 type: test 
 channel:
+  version: 0.0.1
   id: 0000000000000000000000000000000000000000000000000000000000000000
+  owner: 0000000000000000000000000000000000000000000000000000000000000000
+  contract-file: "samplecontract.wasm"
+  abi-file: "samplecontract.json"
 gateway-node: 
   address: https://localhost:6299
 transactions:
