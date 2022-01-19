@@ -323,9 +323,10 @@ func ExecuteTests(ctx context.Context, manifests []*Manifest, client mazzaroth.C
 
 			receiptJson, err := json.MarshalIndent(receipt, "", "\t")
 			fmt.Println("transaction complete:receipt: \n", string(receiptJson))
-
-			if receipt.Result != t.Tx.Receipt.Result {
-				return fmt.Errorf("expected transaction results : %s does not match %s", t.Tx.Receipt.Result, receipt.Result)
+			if t.Tx.Receipt != nil {
+				if receipt.Result != t.Tx.Receipt.Result {
+					return fmt.Errorf("expected transaction results : %s does not match %s", t.Tx.Receipt.Result, receipt.Result)
+				}
 			}
 		}
 	}

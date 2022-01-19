@@ -15,7 +15,7 @@ type GatewayNode struct {
 type Transaction struct {
 	Function string   `yaml:"function,omitempty"`
 	Args     []string `yaml:"args,omitempty"`
-	Receipt  Receipt  `yaml:"receipt,omitempty"`
+	Receipt  *Receipt `yaml:"receipt,omitempty"`
 }
 
 type Receipt struct {
