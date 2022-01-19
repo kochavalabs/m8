@@ -1,9 +1,9 @@
 version: 0.0.1
 type: test 
 channel:
-  id: 00000000000000000000000000000000
+  id: 0000000000000000000000000000000000000000000000000000000000000000
 gateway-node: 
-  address: https://localhost:8081
+  address: https://localhost:6299
 transactions:
   - tx:
     function: "foo"

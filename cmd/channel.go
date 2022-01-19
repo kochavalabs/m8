@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -102,7 +103,7 @@ func channelCmdChain() *cobra.Command {
 				return err
 			}
 
-			fmt.Println("transaction id:", id)
+			fmt.Println("transaction id:", hex.EncodeToString(id[:]))
 			return nil
 		},
 	}
@@ -145,6 +146,11 @@ func channelCmdChain() *cobra.Command {
 		Short: "pause/unpause a channel contract",
 		RunE: func(cmd *cobra.Command, args []string) error {
 
+			pk, err := crypto.FromHex(viper.GetString(privateKey))
+			if err != nil {
+				return err
+			}
+
 			sender, err := xdr.IDFromHexString(viper.GetString(publicKey))
 			if err != nil {
 				return err
@@ -157,7 +163,7 @@ func channelCmdChain() *cobra.Command {
 
 			tx, err := mazzaroth.Transaction(sender, channelId).Contract(mazzaroth.GenerateNonce(), defaultBlockExpirationNumber).
 				Pause(viper.GetBool(pause)).
-				Sign(nil)
+				Sign(pk)
 			if err != nil {
 				return err
 			}

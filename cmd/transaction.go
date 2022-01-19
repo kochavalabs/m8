@@ -28,12 +28,12 @@ func transactionCmdChain() *cobra.Command {
 				return err
 			}
 
-			receipt, err := client.TransactionLookup(cmd.Context(), viper.GetString(channelId), viper.GetString(transactionId))
+			tx, err := client.TransactionLookup(cmd.Context(), viper.GetString(channelId), viper.GetString(transactionId))
 			if err != nil {
 				return err
 			}
 
-			v, err := json.MarshalIndent(receipt, "", "\t")
+			v, err := json.MarshalIndent(tx, "", "\t")
 			if err != nil {
 				return err
 			}
@@ -88,7 +88,7 @@ func transactionCmdChain() *cobra.Command {
 					return err
 				}
 				fmt.Println("receipt object:")
-				fmt.Println(jsonRcpt)
+				fmt.Println(string(jsonRcpt))
 			}
 
 			txId := hex.EncodeToString(id[:])

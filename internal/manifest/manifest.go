@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/ed25519"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -140,13 +141,16 @@ func ExecuteDeployments(ctx context.Context, manifests []*Manifest, client mazza
 			return err
 		}
 
-		fmt.Println("contract deployed:transaction id:", id)
+		fmt.Println("contract deployed:transaction id:", hex.EncodeToString(id[:]))
 		receipt, err := pollForReceipt(m.Channel.Id, fmt.Sprintf("%b", id), client)
 		if err != nil {
 			return err
 		}
 
 		receiptJson, err := json.MarshalIndent(receipt, "", "\t")
+		if err != nil {
+			return err
+		}
 		fmt.Println("contract deployment complete:receipt:", string(receiptJson))
 
 		for _, t := range m.Transactions {
@@ -168,13 +172,16 @@ func ExecuteDeployments(ctx context.Context, manifests []*Manifest, client mazza
 				return err
 			}
 
-			fmt.Println("transaction submitted:id:", fmt.Sprintf("%s", id))
-			receipt, err := pollForReceipt(m.Channel.Id, fmt.Sprintf("%s", id), client)
+			fmt.Println("transaction submitted:id:", hex.EncodeToString(id[:]))
+			receipt, err := pollForReceipt(m.Channel.Id, hex.EncodeToString(id[:]), client)
 			if err != nil {
 				return err
 			}
 
 			receiptJson, err := json.MarshalIndent(receipt, "", "\t")
+			if err != nil {
+				return err
+			}
 			fmt.Println("transaction complete:receipt:", string(receiptJson))
 		}
 	}

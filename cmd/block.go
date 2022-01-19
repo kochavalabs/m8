@@ -105,7 +105,7 @@ func blockCmdChain() *cobra.Command {
 
 			switch {
 			// block header lookup
-			case viper.GetBool(headers):
+			case viper.GetBool(header):
 				blockheader, err := client.BlockHeaderLookup(cmd.Context(), viper.GetString(channelId), viper.GetString(blockid))
 				if err != nil {
 					return err
