@@ -135,7 +135,7 @@ func ExecuteDeployments(ctx context.Context, manifests []*Manifest, client mazza
 			}
 
 			fmt.Println("contract delete:transaction id:", hex.EncodeToString(id[:]))
-			receipt, err := pollForReceipt(m.Channel.Id, fmt.Sprintf("%b", id), client)
+			receipt, err := pollForReceipt(m.Channel.Id, hex.EncodeToString(id[:]), client)
 			if err != nil {
 				return err
 			}
@@ -168,7 +168,7 @@ func ExecuteDeployments(ctx context.Context, manifests []*Manifest, client mazza
 		}
 
 		fmt.Println("contract deployed:transaction id:", hex.EncodeToString(id[:]))
-		receipt, err := pollForReceipt(m.Channel.Id, fmt.Sprintf("%b", id), client)
+		receipt, err := pollForReceipt(m.Channel.Id, hex.EncodeToString(id[:]), client)
 		if err != nil {
 			return err
 		}
@@ -198,9 +198,9 @@ func ExecuteDeployments(ctx context.Context, manifests []*Manifest, client mazza
 				return err
 			}
 
-			fmt.Println("transaction submitted:id:", fmt.Sprintf("%s", id))
+			fmt.Println("transaction submitted:id:", hex.EncodeToString(id[:]))
 			if receipt == nil {
-				receipt, err = pollForReceipt(m.Channel.Id, fmt.Sprintf("%s", id), client)
+				receipt, err = pollForReceipt(m.Channel.Id, hex.EncodeToString(id[:]), client)
 				if err != nil {
 					return err
 				}
@@ -251,7 +251,7 @@ func ExecuteTests(ctx context.Context, manifests []*Manifest, client mazzaroth.C
 			}
 
 			fmt.Println("contract delete:transaction id:", hex.EncodeToString(id[:]))
-			receipt, err := pollForReceipt(m.Channel.Id, fmt.Sprintf("%b", id), client)
+			receipt, err := pollForReceipt(m.Channel.Id, hex.EncodeToString(id[:]), client)
 			if err != nil {
 				return err
 			}
@@ -283,7 +283,7 @@ func ExecuteTests(ctx context.Context, manifests []*Manifest, client mazzaroth.C
 		}
 
 		fmt.Println("contract deployed:transaction id:", hex.EncodeToString(id[:]))
-		receipt, err := pollForReceipt(m.Channel.Id, fmt.Sprintf("%b", id), client)
+		receipt, err := pollForReceipt(m.Channel.Id, hex.EncodeToString(id[:]), client)
 		if err != nil {
 			return err
 		}
@@ -313,15 +313,18 @@ func ExecuteTests(ctx context.Context, manifests []*Manifest, client mazzaroth.C
 				return err
 			}
 
-			fmt.Println("transaction submitted:id:", fmt.Sprintf("%s", id))
+			fmt.Println("transaction submitted:id:", hex.EncodeToString(id[:]))
 			if receipt == nil {
-				receipt, err = pollForReceipt(m.Channel.Id, fmt.Sprintf("%s", id), client)
+				receipt, err = pollForReceipt(m.Channel.Id, hex.EncodeToString(id[:]), client)
 				if err != nil {
 					return err
 				}
 			}
 
 			receiptJson, err := json.MarshalIndent(receipt, "", "\t")
+			if err != nil {
+				return err
+			}
 			fmt.Println("transaction complete:receipt: \n", string(receiptJson))
 			if t.Tx.Receipt != nil {
 				if receipt.Result != t.Tx.Receipt.Result {
