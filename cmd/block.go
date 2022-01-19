@@ -20,7 +20,7 @@ func blockCmdChain() *cobra.Command {
 		Use:   "height",
 		Short: "return the block height of a given channel",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			client, err := mazzaroth.NewMazzarothClient(mazzaroth.WithAddress(viper.GetString(address)))
+			client, err := mazzaroth.NewMazzarothClient(mazzaroth.WithAddress(viper.GetString(channelAddress)))
 			if err != nil {
 				return err
 			}
@@ -47,7 +47,7 @@ func blockCmdChain() *cobra.Command {
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			client, err := mazzaroth.NewMazzarothClient(mazzaroth.WithAddress(viper.GetString(address)))
+			client, err := mazzaroth.NewMazzarothClient(mazzaroth.WithAddress(viper.GetString(channelAddress)))
 			if err != nil {
 				return err
 			}
@@ -88,7 +88,6 @@ func blockCmdChain() *cobra.Command {
 		},
 	}
 	blockListCmd.Flags().Bool(headers, false, "option to return list of block headers")
-	blockListCmd.Flags().Bool(blocks, true, "option to return list of blocks")
 	blockListCmd.Flags().Int(height, 0, "starting block height value")
 	blockListCmd.MarkFlagRequired(height)
 	blockListCmd.Flags().Int(number, 1, "number of blocks to list")
@@ -99,14 +98,14 @@ func blockCmdChain() *cobra.Command {
 		Short: "return a block or block header for a given channel by id",
 		RunE: func(cmd *cobra.Command, args []string) error {
 
-			client, err := mazzaroth.NewMazzarothClient(mazzaroth.WithAddress(viper.GetString(address)))
+			client, err := mazzaroth.NewMazzarothClient(mazzaroth.WithAddress(viper.GetString(channelAddress)))
 			if err != nil {
 				return err
 			}
 
 			switch {
 			// block header lookup
-			case viper.GetBool(headers):
+			case viper.GetBool(header):
 				blockheader, err := client.BlockHeaderLookup(cmd.Context(), viper.GetString(channelId), viper.GetString(blockid))
 				if err != nil {
 					return err
@@ -137,9 +136,8 @@ func blockCmdChain() *cobra.Command {
 			}
 		},
 	}
-	blockLookupCmd.Flags().Bool(headers, false, "option to return list of block headers")
-	blockLookupCmd.Flags().Bool(blocks, true, "option to return list of blocks")
-	blockLookupCmd.Flags().String(blockid, "", "starting block height value")
+	blockLookupCmd.Flags().Bool(header, false, "option to return block header")
+	blockLookupCmd.Flags().String(blockid, "", "id of block")
 	blockLookupCmd.MarkFlagRequired(blockid)
 
 	blockRootCmd.AddCommand(blockHeightCmd, blockListCmd, blockLookupCmd)

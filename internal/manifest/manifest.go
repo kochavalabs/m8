@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/ed25519"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -12,17 +13,20 @@ import (
 	"time"
 
 	"github.com/kochavalabs/mazzaroth-go"
-	"github.com/kochavalabs/mazzaroth-xdr/xdr"
+	"github.com/kochavalabs/mazzaroth-xdr/go-xdr/xdr"
 	"gopkg.in/yaml.v2"
 )
 
 const (
-	maxRetry = 10
+	maxRetry                     = 10
+	defaultBlockExpirationNumber = 5
 )
 
 type Manifest struct {
 	Version      string      `yaml:"version"`
 	Type         string      `yaml:"type"`
+	Name         string      `yaml:"name"`
+	Reset        bool        `yaml:"reset"`
 	Channel      Channel     `yaml:"channel"`
 	GatewayNode  GatewayNode `yaml:"gateway-node"`
 	Transactions []*Tx       `yaml:"transactions,omitempty"`
@@ -37,10 +41,12 @@ func loadAbi(path string) (*xdr.Abi, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	abi := &xdr.Abi{}
 	if err := json.Unmarshal(abiFile, abi); err != nil {
 		return nil, err
 	}
+
 	return abi, nil
 }
 
@@ -63,6 +69,7 @@ func pollForReceipt(channelId string, transactionId string, client mazzaroth.Cli
 				time.Sleep(time.Second * 5)
 				continue
 			}
+			// return first error
 			return nil, err
 		}
 		return receipt, nil
@@ -110,6 +117,35 @@ func ExecuteDeployments(ctx context.Context, manifests []*Manifest, client mazza
 			return err
 		}
 
+		owner, err := xdr.IDFromHexString(m.Channel.Owner)
+		if err != nil {
+			return err
+		}
+
+		if m.Reset {
+			tx, err := mazzaroth.Transaction(senderId, channelId).
+				Contract(mazzaroth.GenerateNonce(), defaultBlockExpirationNumber).Delete().Sign(privKey)
+			if err != nil {
+				return err
+			}
+
+			id, _, err := client.TransactionSubmit(ctx, tx)
+			if err != nil {
+				return err
+			}
+
+			fmt.Println("contract delete:transaction id:", hex.EncodeToString(id[:]))
+			receipt, err := pollForReceipt(m.Channel.Id, hex.EncodeToString(id[:]), client)
+			if err != nil {
+				return err
+			}
+			receiptJson, err := json.MarshalIndent(receipt, "", "\t")
+			if err != nil {
+				return err
+			}
+			fmt.Println("contract delete complete:receipt:\n", string(receiptJson))
+		}
+
 		abi, err := loadAbi(m.Channel.AbiFile)
 		if err != nil {
 			return err
@@ -120,8 +156,8 @@ func ExecuteDeployments(ctx context.Context, manifests []*Manifest, client mazza
 			return err
 		}
 
-		tx, err := mazzaroth.Transaction(&senderId, &channelId).
-			Contract(0, 0).Abi(abi).ContractBytes(contract).Version(m.Channel.Version).Sign(privKey)
+		tx, err := mazzaroth.Transaction(senderId, channelId).
+			Contract(mazzaroth.GenerateNonce(), defaultBlockExpirationNumber).Deploy(owner, m.Channel.Version, abi, contract).Sign(privKey)
 		if err != nil {
 			return err
 		}
@@ -131,13 +167,17 @@ func ExecuteDeployments(ctx context.Context, manifests []*Manifest, client mazza
 			return err
 		}
 
-		fmt.Println("Contract Deployed:transaction id:", id)
-		receipt, err := pollForReceipt(m.Channel.Id, fmt.Sprintf("%b", id), client)
+		fmt.Println("contract deployed:transaction id:", hex.EncodeToString(id[:]))
+		receipt, err := pollForReceipt(m.Channel.Id, hex.EncodeToString(id[:]), client)
 		if err != nil {
 			return err
 		}
+
 		receiptJson, err := json.MarshalIndent(receipt, "", "\t")
-		fmt.Println("Contract Deployment Complete:receipt:", string(receiptJson))
+		if err != nil {
+			return err
+		}
+		fmt.Println("contract deployment complete:receipt:\n", string(receiptJson))
 
 		for _, t := range m.Transactions {
 			args := make([]xdr.Argument, 0, 0)
@@ -146,22 +186,32 @@ func ExecuteDeployments(ctx context.Context, manifests []*Manifest, client mazza
 					args = append(args, xdr.Argument(a))
 				}
 			}
-			tx, err := mazzaroth.Transaction(&senderId, &channelId).
-				Call(0, 0).Function(t.Tx.Function).Arguments(args...).Sign(privKey)
+
+			tx, err := mazzaroth.Transaction(senderId, channelId).
+				Call(mazzaroth.GenerateNonce(), defaultBlockExpirationNumber).Function(t.Tx.Function).Arguments(args...).Sign(privKey)
 			if err != nil {
 				return err
 			}
-			id, _, err := client.TransactionSubmit(ctx, tx)
+
+			id, receipt, err := client.TransactionSubmit(ctx, tx)
 			if err != nil {
 				return err
 			}
-			fmt.Println("transaction submitted:id:", fmt.Sprintf("%s", id))
-			receipt, err := pollForReceipt(m.Channel.Id, fmt.Sprintf("%s", id), client)
-			if err != nil {
-				return err
+
+			fmt.Println("transaction submitted:id:", hex.EncodeToString(id[:]))
+			if receipt == nil {
+				receipt, err = pollForReceipt(m.Channel.Id, hex.EncodeToString(id[:]), client)
+				if err != nil {
+					return err
+				}
 			}
+
 			receiptJson, err := json.MarshalIndent(receipt, "", "\t")
-			fmt.Println("transaction complete:receipt:", string(receiptJson))
+			if err != nil {
+				return err
+			}
+
+			fmt.Println("transaction complete:receipt:\n", string(receiptJson))
 		}
 	}
 	return nil
@@ -183,6 +233,67 @@ func ExecuteTests(ctx context.Context, manifests []*Manifest, client mazzaroth.C
 			return err
 		}
 
+		owner, err := xdr.IDFromHexString(m.Channel.Owner)
+		if err != nil {
+			return err
+		}
+
+		if m.Reset {
+			tx, err := mazzaroth.Transaction(senderId, channelId).
+				Contract(mazzaroth.GenerateNonce(), defaultBlockExpirationNumber).Delete().Sign(privKey)
+			if err != nil {
+				return err
+			}
+
+			id, _, err := client.TransactionSubmit(ctx, tx)
+			if err != nil {
+				return err
+			}
+
+			fmt.Println("contract delete:transaction id:", hex.EncodeToString(id[:]))
+			receipt, err := pollForReceipt(m.Channel.Id, hex.EncodeToString(id[:]), client)
+			if err != nil {
+				return err
+			}
+			receiptJson, err := json.MarshalIndent(receipt, "", "\t")
+			if err != nil {
+				return err
+			}
+			fmt.Println("contract delete complete:receipt:\n", string(receiptJson))
+		}
+		abi, err := loadAbi(m.Channel.AbiFile)
+		if err != nil {
+			return err
+		}
+
+		contract, err := loadContract(m.Channel.ContractFile)
+		if err != nil {
+			return err
+		}
+
+		tx, err := mazzaroth.Transaction(senderId, channelId).
+			Contract(mazzaroth.GenerateNonce(), defaultBlockExpirationNumber).Deploy(owner, m.Channel.Version, abi, contract).Sign(privKey)
+		if err != nil {
+			return err
+		}
+
+		id, _, err := client.TransactionSubmit(ctx, tx)
+		if err != nil {
+			return err
+		}
+
+		fmt.Println("contract deployed:transaction id:", hex.EncodeToString(id[:]))
+		receipt, err := pollForReceipt(m.Channel.Id, hex.EncodeToString(id[:]), client)
+		if err != nil {
+			return err
+		}
+
+		receiptJson, err := json.MarshalIndent(receipt, "", "\t")
+		if err != nil {
+			return err
+		}
+		fmt.Println("contract deployment complete:receipt:\n", string(receiptJson))
+
 		for _, t := range m.Transactions {
 			args := make([]xdr.Argument, 0, 0)
 			if len(t.Tx.Args) > 0 {
@@ -190,22 +301,39 @@ func ExecuteTests(ctx context.Context, manifests []*Manifest, client mazzaroth.C
 					args = append(args, xdr.Argument(a))
 				}
 			}
-			tx, err := mazzaroth.Transaction(&senderId, &channelId).
-				Call(0, 0).Function(t.Tx.Function).Arguments(args...).Sign(privKey)
+
+			tx, err := mazzaroth.Transaction(senderId, channelId).
+				Call(mazzaroth.GenerateNonce(), defaultBlockExpirationNumber).Function(t.Tx.Function).Arguments(args...).Sign(privKey)
 			if err != nil {
 				return err
 			}
-			id, _, err := client.TransactionSubmit(ctx, tx)
+
+			id, receipt, err := client.TransactionSubmit(ctx, tx)
 			if err != nil {
 				return err
 			}
-			fmt.Println("transaction submitted:id:", fmt.Sprintf("%s", id))
-			receipt, err := pollForReceipt(m.Channel.Id, fmt.Sprintf("%s", id), client)
-			if err != nil {
-				return err
+
+			fmt.Println("transaction submitted:id:", hex.EncodeToString(id[:]))
+			if receipt == nil {
+				receipt, err = pollForReceipt(m.Channel.Id, hex.EncodeToString(id[:]), client)
+				if err != nil {
+					return err
+				}
 			}
+
 			receiptJson, err := json.MarshalIndent(receipt, "", "\t")
-			fmt.Println("transaction complete:receipt:", string(receiptJson))
+			if err != nil {
+				return err
+			}
+			fmt.Println("transaction complete:receipt: \n", string(receiptJson))
+			if t.Tx.Receipt != nil {
+				if receipt.Status != xdr.Status(t.Tx.Receipt.Status) {
+					return fmt.Errorf("expected transaction status : %d does not match %d", t.Tx.Receipt.Status, receipt.Status)
+				}
+				if receipt.Result != t.Tx.Receipt.Result {
+					return fmt.Errorf("expected transaction results : %s does not match %s", t.Tx.Receipt.Result, receipt.Result)
+				}
+			}
 		}
 	}
 	return nil
