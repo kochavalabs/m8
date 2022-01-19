@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/kochavalabs/crypto v0.1.3
-	github.com/kochavalabs/mazzaroth-go v0.8.3
+	github.com/kochavalabs/mazzaroth-go v0.8.5
 	github.com/kochavalabs/mazzaroth-xdr v0.8.1
 	github.com/manifoldco/promptui v0.8.0
 	github.com/spf13/cobra v1.2.1
