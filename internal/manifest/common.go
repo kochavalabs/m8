@@ -19,6 +19,6 @@ type Transaction struct {
 }
 
 type Receipt struct {
-	Status string `yaml:"status,omitempty"`
+	Status int32  `yaml:"status,omitempty"`
 	Result string `yaml:"result,omitempty"`
 }

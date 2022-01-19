@@ -327,6 +327,9 @@ func ExecuteTests(ctx context.Context, manifests []*Manifest, client mazzaroth.C
 			}
 			fmt.Println("transaction complete:receipt: \n", string(receiptJson))
 			if t.Tx.Receipt != nil {
+				if receipt.Status != xdr.Status(t.Tx.Receipt.Status) {
+					return fmt.Errorf("expected transaction status : %d does not match %d", t.Tx.Receipt.Status, receipt.Status)
+				}
 				if receipt.Result != t.Tx.Receipt.Result {
 					return fmt.Errorf("expected transaction results : %s does not match %s", t.Tx.Receipt.Result, receipt.Result)
 				}
