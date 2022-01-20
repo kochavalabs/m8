@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/kochavalabs/mazzaroth-cli/cmd"
+	"github.com/kochavalabs/m8/cmd"
 )
 
 func main() {

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"os"
 
-	"github.com/kochavalabs/mazzaroth-cli/internal/cfg"
+	"github.com/kochavalabs/m8/internal/cfg"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"golang.org/x/sync/errgroup"

@@ -1,4 +1,4 @@
-module github.com/kochavalabs/mazzaroth-cli
+module github.com/kochavalabs/m8
 
 go 1.16
 
