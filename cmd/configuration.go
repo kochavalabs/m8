@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/kochavalabs/crypto"
-	"github.com/kochavalabs/mazzaroth-cli/internal/cfg"
+	"github.com/kochavalabs/m8/internal/cfg"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"

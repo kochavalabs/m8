@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/kochavalabs/crypto"
-	"github.com/kochavalabs/mazzaroth-cli/internal/manifest"
+	"github.com/kochavalabs/m8/internal/manifest"
 	"github.com/kochavalabs/mazzaroth-go"
 	"github.com/kochavalabs/mazzaroth-xdr/go-xdr/xdr"
 	"github.com/spf13/cobra"
