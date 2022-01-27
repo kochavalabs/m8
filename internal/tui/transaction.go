@@ -55,6 +55,10 @@ func (t TxModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		t.id = msg
 		t.quit = true
 		return t, tea.Quit
+	case *xdr.Receipt:
+		t.rcpt = msg
+		t.quit = true
+		return t, tea.Quit
 	case error:
 		t.err = error(msg)
 		t.quit = true
@@ -78,6 +82,15 @@ func (t TxModel) View() string {
 		}
 		output = string(v)
 	}
+
+	if t.rcpt != nil {
+		v, err := json.MarshalIndent(t.rcpt, "", "\t")
+		if err != nil {
+			return err.Error()
+		}
+		output = string(v)
+	}
+
 	if t.err != nil {
 		output = t.err.Error() + "\n"
 	}
