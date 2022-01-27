@@ -39,6 +39,12 @@ func (t TxModel) Init() tea.Cmd {
 
 func (t TxModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case *xdr.Transaction:
+		return t, tea.Quit
+	case xdr.ID:
+		return t, tea.Quit
+	case error:
+		return t, tea.Quit
 	default:
 		var cmd tea.Cmd
 		t.stopwatch, cmd = t.stopwatch.Update(msg)
@@ -73,8 +79,15 @@ func TxLookup(ctx context.Context, client mazzaroth.Client, channelId string, tr
 	}
 }
 
-func TxCall(ctx context.Context, client mazzaroth.Client, channelId string, sender string, function string, args []xdr.Argument) tea.Cmd {
+func TxCall(ctx context.Context, client mazzaroth.Client, tx *xdr.Transaction) tea.Cmd {
 	return func() tea.Msg {
-		return ""
+		id, rcpt, err := client.TransactionSubmit(ctx, tx)
+		if err != nil {
+			return err
+		}
+		if rcpt != nil {
+			return rcpt
+		}
+		return id
 	}
 }
