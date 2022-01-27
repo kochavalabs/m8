@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -13,41 +12,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func TransactionLookup(ctx context.Context, channelAddress string, channelId string, transactionId string) error {
-	client, err := mazzaroth.NewMazzarothClient(mazzaroth.WithAddress(channelAddress))
-	if err != nil {
-		return err
-	}
-
-	tx, err := client.TransactionLookup(ctx, channelId, transactionId)
-	if err != nil {
-		return err
-	}
-
-	v, err := json.MarshalIndent(tx, "", "\t")
-	if err != nil {
-		return err
-	}
-
-	fmt.Println(string(v))
-	return nil
-}
-
 func transactionCmdChain() *cobra.Command {
-
-	transactionLookupCmd := &cobra.Command{
-		Use:   "tx",
-		Short: "lookup a transaction for a given channel by transaction id",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			err := TransactionLookup(cmd.Context(), viper.GetString(channelAddress), viper.GetString(channelId), viper.GetString(transactionId))
-			if err != nil {
-				return err
-			}
-			return nil
-		},
-	}
-	transactionLookupCmd.Flags().String(transactionId, "", "id of the transaction being looked up")
-	transactionLookupCmd.MarkFlagRequired(transactionId)
 
 	transactionCallCmd := &cobra.Command{
 		Use:   "call",
@@ -106,5 +71,5 @@ func transactionCmdChain() *cobra.Command {
 	transactionCallCmd.Flags().StringSlice(arguments, []string{""}, "the args to pass within the function")
 
 	//transactionRootCmd.AddCommand(transactionLookupCmd, transactionCallCmd)
-	return transactionLookupCmd
+	return nil // transactionLookupCmd
 }

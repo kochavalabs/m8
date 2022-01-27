@@ -227,6 +227,7 @@ func ChannelCmdChain() *cobra.Command {
 		channelDeployCmd,
 		channelPauseCmd,
 		channelTestCmd,
-		verbs.Lookup("channel"))
+		verbs.Lookup("channel"),
+		verbs.Exec())
 	return channelRootCmd
 }

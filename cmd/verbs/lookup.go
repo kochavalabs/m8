@@ -4,8 +4,11 @@ import (
 	"errors"
 	"fmt"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/kochavalabs/m8/internal/cfg"
+	"github.com/kochavalabs/m8/internal/tui"
+	"github.com/kochavalabs/mazzaroth-go"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v2"
@@ -22,6 +25,10 @@ const (
 	darkGrey = `#353C3B`
 	teal     = `#01A299`
 	white    = `#FFFFFF`
+
+	transactionId  = `tx-id`
+	channelAddress = `channel-address`
+	channelId      = `channel-id`
 )
 
 func Lookup(resource string) *cobra.Command {
@@ -114,14 +121,32 @@ func lookupBlock() *cobra.Command {
 }
 
 func lookupTx() *cobra.Command {
-	tx := &cobra.Command{
+	txLookup := &cobra.Command{
 		Use:   "tx",
 		Short: "look up items on a mazzaroth node",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			addr := viper.GetString(channelAddress)
+
+			client, err := mazzaroth.NewMazzarothClient(mazzaroth.WithAddress(addr))
+			if err != nil {
+				return err
+			}
+
+			channelId := viper.GetString(channelId)
+			transactionId := viper.GetString(transactionId)
+
+			txCmd := tui.TxLookup(cmd.Context(), client, channelId, transactionId)
+			txModel := tui.NewTxModel(txCmd)
+
+			if err := tea.NewProgram(txModel).Start(); err != nil {
+				return err
+			}
 			return nil
 		},
 	}
-	return tx
+	txLookup.Flags().String(transactionId, "", "id of the transaction being looked up")
+	txLookup.MarkFlagRequired(transactionId)
+	return txLookup
 }
 
 func lookupReceipt() *cobra.Command {
