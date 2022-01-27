@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/charmbracelet/bubbles/stopwatch"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/kochavalabs/mazzaroth-go"
 	"github.com/kochavalabs/mazzaroth-xdr/go-xdr/xdr"
@@ -11,7 +12,15 @@ import (
 
 var _ tea.Model = &TxModel{}
 
+type rcptMsg *xdr.Receipt
+
+type txIdMsg xdr.ID
+
+type txMsg *xdr.Transaction
+
 type TxModel struct {
+	stopwatch stopwatch.Model
+
 	cmd  tea.Cmd
 	tx   *xdr.Transaction
 	rcpt *xdr.Receipt
@@ -25,31 +34,47 @@ func NewTxModel(cmd tea.Cmd) *TxModel {
 }
 
 func (t TxModel) Init() tea.Cmd {
-	return t.cmd
+	return tea.Batch(t.stopwatch.Init(), t.cmd)
 }
 
-func (t TxModel) Update(tea.Msg) (tea.Model, tea.Cmd) {
-	return nil, nil
+func (t TxModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	default:
+		var cmd tea.Cmd
+		t.stopwatch, cmd = t.stopwatch.Update(msg)
+		return t, cmd
+	}
 }
 
 func (t TxModel) View() string {
-	return ""
+	if t.tx != nil {
+		v, err := json.MarshalIndent(t.tx, "", "\t")
+		if err != nil {
+			return err.Error()
+		}
+		return string(v)
+	}
+	// Note: you could further customize the time output by getting the
+	// duration from m.stopwatch.Elapsed(), which returns a time.Duration, and
+	// skip m.stopwatch.View() altogether.
+	s := t.stopwatch.View() + "\n"
+	s = "Elapsed: " + s
+
+	return s
 }
 
-func txLookup(ctx context.Context, client mazzaroth.Client, channelId string, transactionId string) tea.Cmd {
+func TxLookup(ctx context.Context, client mazzaroth.Client, channelId string, transactionId string) tea.Cmd {
 	return func() tea.Msg {
 		tx, err := client.TransactionLookup(ctx, channelId, transactionId)
 		if err != nil {
 			return err
 		}
-
-		v, err := json.MarshalIndent(tx, "", "\t")
-		if err != nil {
-			return err
-		}
-
-		return v
+		return tx
 	}
 }
 
-func txCall(ctx context.Context, client mazzaroth.Client, channelId string, sender string, function string, args []xdr.Argument)
+func TxCall(ctx context.Context, client mazzaroth.Client, channelId string, sender string, function string, args []xdr.Argument) tea.Cmd {
+	return func() tea.Msg {
+		return ""
+	}
+}
