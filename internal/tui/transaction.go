@@ -70,14 +70,14 @@ func (t TxModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (t TxModel) View() string {
+	output := ""
 	if t.tx != nil {
 		v, err := json.MarshalIndent(t.tx, "", "\t")
 		if err != nil {
 			return err.Error()
 		}
-		return string(v)
+		output = string(v)
 	}
-	output := ""
 	if t.err != nil {
 		output = t.err.Error() + "\n"
 	}
