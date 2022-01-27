@@ -1,4 +1,4 @@
-package cmd
+package resources
 
 import (
 	"errors"
@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/kochavalabs/crypto"
+	"github.com/kochavalabs/m8/cmd/verbs"
 	"github.com/kochavalabs/m8/internal/cfg"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
@@ -15,7 +16,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-func configurationCmdChain() *cobra.Command {
+func ConfigurationCmdChain() *cobra.Command {
 	cfgRootCmd := &cobra.Command{
 		Use:   "cfg",
 		Short: "mazzaroth cli configurations and preferences",
@@ -253,7 +254,7 @@ func configurationCmdChain() *cobra.Command {
 
 	cfgSetCmd.AddCommand(cfgSetChannelCmd)
 	cfgAddCmd.AddCommand(cfgAddChannelCmd)
-	cfgRootCmd.AddCommand(cfgInitCmd, cfgShowCmd, cfgSetCmd, cfgAddCmd)
+	cfgRootCmd.AddCommand(cfgInitCmd, cfgShowCmd, cfgSetCmd, cfgAddCmd, verbs.Lookup("cfg"))
 	return cfgRootCmd
 }
 

@@ -1,4 +1,4 @@
-package cmd
+package resources
 
 import (
 	"encoding/hex"
@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/kochavalabs/crypto"
+	"github.com/kochavalabs/m8/cmd/verbs"
 	"github.com/kochavalabs/m8/internal/manifest"
 	"github.com/kochavalabs/mazzaroth-go"
 	"github.com/kochavalabs/mazzaroth-xdr/go-xdr/xdr"
@@ -15,7 +16,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func channelCmdChain() *cobra.Command {
+func ChannelCmdChain() *cobra.Command {
 
 	channelRootCmd := &cobra.Command{
 		Use:   "channel",
@@ -88,7 +89,7 @@ func channelCmdChain() *cobra.Command {
 				return err
 			}
 
-			tx, err := mazzaroth.Transaction(sender, channelId).Contract(mazzaroth.GenerateNonce(), defaultBlockExpirationNumber).Delete().Sign(pk)
+			tx, err := mazzaroth.Transaction(sender, channelId).Contract(mazzaroth.GenerateNonce(), maxBlockExpirationRange).Delete().Sign(pk)
 			if err != nil {
 				return err
 			}
@@ -136,6 +137,7 @@ func channelCmdChain() *cobra.Command {
 			if err := manifest.ExecuteDeployments(cmd.Context(), manifests, client, viper.GetString(publicKey), pk); err != nil {
 				return err
 			}
+
 			return nil
 		},
 	}
@@ -161,7 +163,7 @@ func channelCmdChain() *cobra.Command {
 				return err
 			}
 
-			tx, err := mazzaroth.Transaction(sender, channelId).Contract(mazzaroth.GenerateNonce(), defaultBlockExpirationNumber).
+			tx, err := mazzaroth.Transaction(sender, channelId).Contract(mazzaroth.GenerateNonce(), maxBlockExpirationRange).
 				Pause(viper.GetBool(pause)).
 				Sign(pk)
 			if err != nil {
@@ -225,9 +227,6 @@ func channelCmdChain() *cobra.Command {
 		channelDeployCmd,
 		channelPauseCmd,
 		channelTestCmd,
-		blockCmdChain(),
-		transactionCmdChain(),
-		receiptCmdChain(),
-	)
+		verbs.Lookup("channel"))
 	return channelRootCmd
 }

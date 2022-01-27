@@ -1,4 +1,4 @@
-package cmd
+package resources
 
 const (
 	version                       = `0.0.1`

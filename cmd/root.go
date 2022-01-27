@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 
+	"github.com/kochavalabs/m8/cmd/resources"
 	"github.com/kochavalabs/m8/internal/cfg"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -28,16 +29,6 @@ func Execute() error {
 			if _, err := os.Stat(viper.GetString(cfgPath)); errors.Is(err, os.ErrNotExist) {
 				return errors.New(err.Error())
 			}
-
-			/*
-				viper.SetConfigType("yaml")
-				viper.SetConfigFile(viper.GetString(cfgPath))
-				err := viper.ReadInConfig()
-				if err != nil {
-					return err
-				}
-				fmt.Println(viper.AllKeys())
-			*/
 
 			config, err := cfg.FromFile(viper.GetString(cfgPath))
 			if err != nil {
@@ -75,8 +66,8 @@ func Execute() error {
 		},
 	}
 
-	rootCmd.AddCommand(channelCmdChain())
-	rootCmd.AddCommand(configurationCmdChain())
+	rootCmd.AddCommand(resources.ChannelCmdChain())
+	rootCmd.AddCommand(resources.ConfigurationCmdChain())
 
 	dir, err := os.UserHomeDir()
 	if err != nil {

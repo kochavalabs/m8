@@ -8,16 +8,34 @@ channel:
   abi-file: "samplecontract.json"
 gateway-node: 
   address: https://localhost:6299
-transactions:
-  - tx:
-    function: "foo"
-    args: ["1","2","3","4"]
-    receipt: 
-      status: 1 
-      result: "success"
-  - tx:
-    function: "bar"
-    args: ["1","2","3","4"]
-    receipt: 
-      status: 1 
-      result: "success"
+tests :
+  - name: test-foo
+    reset: false 
+    transactions:
+      - tx:
+        function: "foo"
+        args: ["1","2","3","4"]
+        receipt: 
+          status: 1 
+          result: "success"
+      - tx:
+        function: "bar"
+        args: ["1","2","3","4"]
+        receipt: 
+          status: 1 
+          result: "success"
+  - name: test-bar
+    reset: true 
+    transactions:
+      - tx:
+        function: "foo"
+        args: ["1","2","3","4"]
+        receipt: 
+          status: 1 
+          result: "success"
+      - tx:
+        function: "bar"
+        args: ["1","2","3","4"]
+        receipt: 
+          status: 1 
+          result: "success"

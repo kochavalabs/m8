@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -12,33 +13,36 @@ import (
 	"github.com/spf13/viper"
 )
 
-func transactionCmdChain() *cobra.Command {
-	transactionRootCmd := &cobra.Command{
-		Use:   "tx",
-		Short: "interact with receipt endpoints on a mazzaroth gateway node",
+func TransactionLookup(ctx context.Context, channelAddress string, channelId string, transactionId string) error {
+	client, err := mazzaroth.NewMazzarothClient(mazzaroth.WithAddress(channelAddress))
+	if err != nil {
+		return err
 	}
 
+	tx, err := client.TransactionLookup(ctx, channelId, transactionId)
+	if err != nil {
+		return err
+	}
+
+	v, err := json.MarshalIndent(tx, "", "\t")
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(string(v))
+	return nil
+}
+
+func transactionCmdChain() *cobra.Command {
+
 	transactionLookupCmd := &cobra.Command{
-		Use:   "lookup",
+		Use:   "tx",
 		Short: "lookup a transaction for a given channel by transaction id",
 		RunE: func(cmd *cobra.Command, args []string) error {
-
-			client, err := mazzaroth.NewMazzarothClient(mazzaroth.WithAddress(viper.GetString(channelAddress)))
+			err := TransactionLookup(cmd.Context(), viper.GetString(channelAddress), viper.GetString(channelId), viper.GetString(transactionId))
 			if err != nil {
 				return err
 			}
-
-			tx, err := client.TransactionLookup(cmd.Context(), viper.GetString(channelId), viper.GetString(transactionId))
-			if err != nil {
-				return err
-			}
-
-			v, err := json.MarshalIndent(tx, "", "\t")
-			if err != nil {
-				return err
-			}
-
-			fmt.Println(string(v))
 			return nil
 		},
 	}
@@ -72,7 +76,7 @@ func transactionCmdChain() *cobra.Command {
 				xdrArgs = append(xdrArgs, xdr.Argument(a))
 			}
 
-			tx, err := mazzaroth.Transaction(sender, channelId).Call(mazzaroth.GenerateNonce(), defaultBlockExpirationNumber).Function(viper.GetString(function)).Arguments(xdrArgs...).Sign(pk)
+			tx, err := mazzaroth.Transaction(sender, channelId).Call(mazzaroth.GenerateNonce(), maxBlockExpirationRange).Function(viper.GetString(function)).Arguments(xdrArgs...).Sign(pk)
 			if err != nil {
 				return err
 			}
@@ -101,6 +105,6 @@ func transactionCmdChain() *cobra.Command {
 
 	transactionCallCmd.Flags().StringSlice(arguments, []string{""}, "the args to pass within the function")
 
-	transactionRootCmd.AddCommand(transactionLookupCmd, transactionCallCmd)
-	return transactionRootCmd
+	//transactionRootCmd.AddCommand(transactionLookupCmd, transactionCallCmd)
+	return transactionLookupCmd
 }

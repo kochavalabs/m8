@@ -1,18 +1,23 @@
 version: 0.0.1
 type: deployment 
 channel:
-  version: 0.0.1
+  version: 0.0.2
   id: 0000000000000000000000000000000000000000000000000000000000000000
   owner: 0000000000000000000000000000000000000000000000000000000000000000
   contract-file: "samplecontract.wasm"
   abi-file: "samplecontract.json"
 gateway-node:
   address: https://localhost:6299 
-transactions:
-  - tx: 
-      function: "init" 
-      args: ["1","2","3","4"]
-  - tx: 
-      function: "balanceof" 
-      args: ["1","2","3","4"]
+deploy:
+  name: sample-contract
+  transactions:
+    - tx: 
+        function: "migration_database_1" 
+        args: ["1","2","3","4"]
+    - tx: 
+        function: "migration_database_2" 
+        args: ["1","2","3","4"]
+    - tx: 
+        function: "balanceof" 
+        args: ["1","2","3","4"]
 
