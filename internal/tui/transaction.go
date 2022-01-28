@@ -7,6 +7,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/stopwatch"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/kochavalabs/mazzaroth-go"
 	"github.com/kochavalabs/mazzaroth-xdr/go-xdr/xdr"
 )
@@ -19,7 +20,7 @@ type TxModel struct {
 	cmd  tea.Cmd
 	tx   *xdr.Transaction
 	rcpt *xdr.Receipt
-	id   xdr.ID
+	id   *xdr.ID
 	err  error
 
 	quit bool
@@ -51,7 +52,7 @@ func (t TxModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case *xdr.Transaction:
 		t.tx = msg
 		return t, tea.Quit
-	case xdr.ID:
+	case *xdr.ID:
 		t.id = msg
 		t.quit = true
 		return t, tea.Quit
@@ -74,6 +75,28 @@ func (t TxModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (t TxModel) View() string {
+
+	barStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.AdaptiveColor{Light: "#FFFFFF", Dark: "#FFFFFF"}).
+		Background(lipgloss.AdaptiveColor{Light: "#353C3B", Dark: "#353C3B"}).
+		Padding(0, 1, 0, 1).Align(lipgloss.Center)
+	m8Text := barStyle.Copy().
+		Bold(true).
+		Foreground(lipgloss.Color("#353C3B")).
+		Background(lipgloss.Color("#E3BD2D")).MarginLeft(1).Render("m8")
+	fileType := barStyle.Copy().Bold(true).
+		Background(lipgloss.Color("#01A299")).Render("exec")
+	cfgPathVal := barStyle.Copy().
+		Bold(true).
+		Width(101 - lipgloss.Width(m8Text) - lipgloss.Width(fileType)).
+		Render("")
+
+	barText := lipgloss.JoinHorizontal(lipgloss.Top,
+		m8Text,
+		cfgPathVal,
+		fileType,
+	)
+
 	output := ""
 	if t.tx != nil {
 		v, err := json.MarshalIndent(t.tx, "", "\t")
@@ -101,12 +124,11 @@ func (t TxModel) View() string {
 	s := t.stopwatch.View()
 	s = "Elapsed: " + s + "\n"
 
-	return output + s
+	return lipgloss.JoinVertical(lipgloss.Top, barText, output, s)
 }
 
 func TxLookup(ctx context.Context, client mazzaroth.Client, channelId string, transactionId string) TxCmd {
 	return func() tea.Msg {
-		time.Sleep(time.Second * 2)
 		tx, err := client.TransactionLookup(ctx, channelId, transactionId)
 		if err != nil {
 			return err
