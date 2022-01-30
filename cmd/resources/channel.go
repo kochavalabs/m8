@@ -2,7 +2,6 @@ package resources
 
 import (
 	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -24,31 +23,6 @@ func ChannelCmdChain() *cobra.Command {
 	}
 	channelRootCmd.PersistentFlags().String(channelId, "", "defaults to the active channel id in the cfg")
 	channelRootCmd.PersistentFlags().String(channelAddress, "", "defaults to active channel address in the cfg")
-
-	channelAbiCmd := &cobra.Command{
-		Use:   "abi",
-		Short: "return the application binary interface for a channel",
-		RunE: func(cmd *cobra.Command, args []string) error {
-
-			client, err := mazzaroth.NewMazzarothClient(mazzaroth.WithAddress(viper.GetString(channelAddress)))
-			if err != nil {
-				return err
-			}
-
-			abi, err := client.ChannelAbi(cmd.Context(), viper.GetString(channelId))
-			if err != nil {
-				return err
-			}
-
-			v, err := json.MarshalIndent(abi, "", "\t")
-			if err != nil {
-				return err
-			}
-
-			fmt.Println(string(v))
-			return nil
-		},
-	}
 
 	channelGenCmd := &cobra.Command{
 		Use:   "gen",
@@ -178,7 +152,6 @@ func ChannelCmdChain() *cobra.Command {
 	channelTestCmd.Flags().String(testManifest, defaultTestManifestPath, "location of mazzaroth channel test manifest")
 
 	channelRootCmd.AddCommand(
-		channelAbiCmd,
 		channelGenCmd,
 		channelDeleteCmd,
 		channelDeployCmd,

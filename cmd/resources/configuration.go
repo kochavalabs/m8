@@ -13,7 +13,6 @@ import (
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"gopkg.in/yaml.v2"
 )
 
 func ConfigurationCmdChain() *cobra.Command {
@@ -173,23 +172,6 @@ func ConfigurationCmdChain() *cobra.Command {
 		},
 	}
 
-	cfgShowCmd := &cobra.Command{
-		Use:   "show",
-		Short: "display the current cfg file",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			cfg := viper.Get("cfg").(*cfg.Configuration)
-			if cfg == nil {
-				return errors.New("missing configuration")
-			}
-			cfgYaml, err := yaml.Marshal(cfg)
-			if err != nil {
-				return err
-			}
-			fmt.Println(string(cfgYaml))
-			return nil
-		},
-	}
-
 	cfgSetCmd := &cobra.Command{
 		Use:   "set",
 		Short: "set or updates values in the mazzaroth cfg",
@@ -254,7 +236,7 @@ func ConfigurationCmdChain() *cobra.Command {
 
 	cfgSetCmd.AddCommand(cfgSetChannelCmd)
 	cfgAddCmd.AddCommand(cfgAddChannelCmd)
-	cfgRootCmd.AddCommand(cfgInitCmd, cfgShowCmd, cfgSetCmd, cfgAddCmd, verbs.Lookup("cfg"))
+	cfgRootCmd.AddCommand(cfgInitCmd, cfgSetCmd, cfgAddCmd, verbs.ShowCfg())
 	return cfgRootCmd
 }
 

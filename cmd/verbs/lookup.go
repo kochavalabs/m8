@@ -1,17 +1,14 @@
 package verbs
 
 import (
-	"errors"
+	"encoding/json"
 	"fmt"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
-	"github.com/kochavalabs/m8/internal/cfg"
 	"github.com/kochavalabs/m8/internal/tui"
 	"github.com/kochavalabs/mazzaroth-go"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"gopkg.in/yaml.v2"
 )
 
 // lookup
@@ -29,6 +26,8 @@ const (
 	transactionId  = `tx-id`
 	channelAddress = `channel-address`
 	channelId      = `channel-id`
+	header         = `header`
+	blockid        = `block-id`
 )
 
 func Lookup(resource string) *cobra.Command {
@@ -40,73 +39,66 @@ func Lookup(resource string) *cobra.Command {
 	switch resource {
 	case "channel":
 		lookup.AddCommand(lookupAbi(), lookupBlock(), lookupTx(), lookupReceipt())
-	case "cfg":
-		lookup.AddCommand(lookupCfg())
+		return lookup
+	default:
+		return lookup
 	}
-	return lookup
-}
-
-func lookupCfg() *cobra.Command {
-	cfg := &cobra.Command{
-		Use:   "cfg",
-		Short: "look up items on a mazzaroth node",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			cfg := viper.Get("cfg").(*cfg.Configuration)
-			if cfg == nil {
-				return errors.New("missing configuration")
-			}
-			cfgYaml, err := yaml.Marshal(cfg)
-			if err != nil {
-				return err
-			}
-
-			barStyle := lipgloss.NewStyle().
-				Foreground(lipgloss.AdaptiveColor{Light: "#FFFFFF", Dark: "#FFFFFF"}).
-				Background(lipgloss.AdaptiveColor{Light: "#353C3B", Dark: "#353C3B"}).
-				Padding(0, 1, 0, 1).Align(lipgloss.Center)
-			m8Text := barStyle.Copy().
-				Bold(true).
-				Foreground(lipgloss.Color(darkGrey)).
-				Background(lipgloss.Color(gold)).MarginLeft(1).Render("m8")
-			fileType := barStyle.Copy().Bold(true).
-				Background(lipgloss.Color(teal)).Render("yaml")
-			cfgPathVal := barStyle.Copy().
-				Bold(true).
-				Width(101 - lipgloss.Width(m8Text) - lipgloss.Width(fileType)).
-				Render(viper.GetString("cfg-path"))
-
-			barText := lipgloss.JoinHorizontal(lipgloss.Top,
-				m8Text,
-				cfgPathVal,
-				fileType,
-			)
-
-			yamlText := lipgloss.NewStyle().
-				Bold(true).
-				Width(100).
-				Foreground(lipgloss.AdaptiveColor{Light: "#353C3B", Dark: "#FFFFFF"}).
-				Border(lipgloss.RoundedBorder()).
-				BorderForeground(lipgloss.AdaptiveColor{Light: "#01A299", Dark: "#01A299"}).
-				Padding(1, 1, 1, 1).Render(string(cfgYaml))
-
-			output := lipgloss.JoinVertical(lipgloss.Top, barText, yamlText)
-
-			fmt.Println(output)
-			return nil
-		},
-	}
-	return cfg
 }
 
 func lookupAbi() *cobra.Command {
 	abi := &cobra.Command{
 		Use:   "abi",
-		Short: "look up items on a mazzaroth node",
+		Short: "return the application binary interfacem (ABI) for a channel",
 		RunE: func(cmd *cobra.Command, args []string) error {
+
+			client, err := mazzaroth.NewMazzarothClient(mazzaroth.WithAddress(viper.GetString(channelAddress)))
+			if err != nil {
+				return err
+			}
+
+			abi, err := client.ChannelAbi(cmd.Context(), viper.GetString(channelId))
+			if err != nil {
+				return err
+			}
+
+			v, err := json.MarshalIndent(abi, "", "\t")
+			if err != nil {
+				return err
+			}
+
+			fmt.Println(string(v))
 			return nil
 		},
 	}
 	return abi
+}
+
+func lookupBlockHeight() *cobra.Command {
+
+	blockHeight := &cobra.Command{
+		Use:   "height",
+		Short: "return the block height of a given channel",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			client, err := mazzaroth.NewMazzarothClient(mazzaroth.WithAddress(viper.GetString(channelAddress)))
+			if err != nil {
+				return err
+			}
+
+			height, err := client.BlockHeight(cmd.Context(), viper.GetString(channelId))
+			if err != nil {
+				return err
+			}
+
+			v, err := json.MarshalIndent(height, "", "\t")
+			if err != nil {
+				return err
+			}
+
+			fmt.Println(string(v))
+			return nil
+		},
+	}
+	return blockHeight
 }
 
 func lookupBlock() *cobra.Command {
@@ -114,9 +106,48 @@ func lookupBlock() *cobra.Command {
 		Use:   "block",
 		Short: "look up items on a mazzaroth node",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return nil
+
+			client, err := mazzaroth.NewMazzarothClient(mazzaroth.WithAddress(viper.GetString(channelAddress)))
+			if err != nil {
+				return err
+			}
+
+			switch {
+			// block header lookup
+			case viper.GetBool(header):
+				blockheader, err := client.BlockHeaderLookup(cmd.Context(), viper.GetString(channelId), viper.GetString(blockid))
+				if err != nil {
+					return err
+				}
+
+				v, err := json.MarshalIndent(blockheader, "", "\t")
+				if err != nil {
+					return err
+				}
+
+				fmt.Println(string(v))
+				return nil
+			// block lookup
+			default:
+
+				block, err := client.BlockLookup(cmd.Context(), viper.GetString(channelId), viper.GetString(blockid))
+				if err != nil {
+					return err
+				}
+
+				v, err := json.MarshalIndent(block, "", "\t")
+				if err != nil {
+					return err
+				}
+
+				fmt.Println(string(v))
+				return nil
+			}
 		},
 	}
+	block.Flags().Bool(header, false, "option to return block header")
+	block.Flags().String(blockid, "", "id of block")
+	block.MarkFlagRequired(blockid)
 	return block
 }
 
@@ -152,10 +183,30 @@ func lookupTx() *cobra.Command {
 func lookupReceipt() *cobra.Command {
 	rcpt := &cobra.Command{
 		Use:   "rcpt",
-		Short: "look up items on a mazzaroth node",
+		Short: "lookup a receipt for a given channel by transaction id",
 		RunE: func(cmd *cobra.Command, args []string) error {
+
+			client, err := mazzaroth.NewMazzarothClient(mazzaroth.WithAddress(viper.GetString(channelAddress)))
+			if err != nil {
+				return err
+			}
+
+			receipt, err := client.ReceiptLookup(cmd.Context(), viper.GetString(channelId), viper.GetString(transactionId))
+			if err != nil {
+				return err
+			}
+
+			v, err := json.MarshalIndent(receipt, "", "\t")
+			if err != nil {
+				return err
+			}
+
+			fmt.Println(string(v))
 			return nil
 		},
 	}
+	rcpt.Flags().String(transactionId, "", "transaction id assoicated to the receipt being looked up")
+	rcpt.MarkFlagRequired(transactionId)
+
 	return rcpt
 }
