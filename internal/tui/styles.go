@@ -7,6 +7,7 @@ const (
 	darkGrey = `#353C3B`
 	teal     = `#01A299`
 	white    = `#FFFFFF`
+	red      = `#F31849`
 )
 
 var (

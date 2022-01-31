@@ -58,30 +58,26 @@ func (c CfgModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (c CfgModel) View() string {
-	if c.err != nil {
-		return c.err.Error()
-	}
 	output := ""
 	bodyText := ""
-	cfgPathText := ""
+
+	m8Text := barStyle.Copy().
+		Foreground(lipgloss.Color(darkGrey)).
+		Background(lipgloss.Color(gold)).MarginLeft(1).Render("m8")
+
+	fileType := barStyle.Copy().
+		Background(lipgloss.Color(teal)).Render("yaml")
+
+	cfgPathVal := barStyle.Copy().
+		Width(101 - lipgloss.Width(m8Text) - lipgloss.Width(fileType)).
+		Render(c.cfg.path)
+
+	barText := lipgloss.JoinHorizontal(lipgloss.Top, m8Text, cfgPathVal, fileType)
+
 	if c.cfg != nil {
 		if c.cfg.body != nil {
 			bodyText = string(c.cfg.body)
 		}
-		cfgPathText = c.cfg.path
-
-		m8Text := barStyle.Copy().
-			Foreground(lipgloss.Color(darkGrey)).
-			Background(lipgloss.Color(gold)).MarginLeft(1).Render("m8")
-
-		fileType := barStyle.Copy().
-			Background(lipgloss.Color(teal)).Render("yaml")
-
-		cfgPathVal := barStyle.Copy().
-			Width(101 - lipgloss.Width(m8Text) - lipgloss.Width(fileType)).
-			Render(cfgPathText)
-
-		barText := lipgloss.JoinHorizontal(lipgloss.Top, m8Text, cfgPathVal, fileType)
 
 		yamlText := lipgloss.NewStyle().
 			Bold(true).
@@ -92,6 +88,18 @@ func (c CfgModel) View() string {
 			Padding(1, 1, 1, 1).Render(string(bodyText))
 
 		output = lipgloss.JoinVertical(lipgloss.Top, barText, yamlText)
+	}
+
+	if c.err != nil {
+		errText := lipgloss.NewStyle().
+			Bold(true).
+			Width(100).
+			Foreground(lipgloss.AdaptiveColor{Light: red, Dark: red}).
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(lipgloss.AdaptiveColor{Light: "#01A299", Dark: "#01A299"}).
+			Padding(1, 1, 1, 1).Render("error: " + c.err.Error())
+
+		output = lipgloss.JoinVertical(lipgloss.Top, barText, errText)
 	}
 
 	return output + "\n"

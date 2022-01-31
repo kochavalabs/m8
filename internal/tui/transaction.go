@@ -115,7 +115,14 @@ func (t TxModel) View() string {
 	}
 
 	if t.err != nil {
-		output = t.err.Error() + "\n"
+		errText := lipgloss.NewStyle().
+			Bold(true).
+			Width(100).
+			Foreground(lipgloss.AdaptiveColor{Light: red, Dark: red}).
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(lipgloss.AdaptiveColor{Light: "#01A299", Dark: "#01A299"}).
+			Padding(1, 1, 1, 1).Render("error: " + t.err.Error())
+		output = errText
 	}
 
 	sw := t.stopwatch.View()
