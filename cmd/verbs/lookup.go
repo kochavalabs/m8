@@ -191,17 +191,15 @@ func lookupReceipt() *cobra.Command {
 				return err
 			}
 
-			receipt, err := client.ReceiptLookup(cmd.Context(), viper.GetString(channelId), viper.GetString(transactionId))
-			if err != nil {
+			channelId := viper.GetString(channelId)
+			transactionId := viper.GetString(transactionId)
+
+			rcptCmd := tui.RcptLookup(cmd.Context(), client, channelId, transactionId)
+			rcptModel := tui.NewRcptModel(rcptCmd)
+
+			if err := tea.NewProgram(rcptModel).Start(); err != nil {
 				return err
 			}
-
-			v, err := json.MarshalIndent(receipt, "", "\t")
-			if err != nil {
-				return err
-			}
-
-			fmt.Println(string(v))
 			return nil
 		},
 	}

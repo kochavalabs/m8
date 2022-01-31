@@ -63,7 +63,7 @@ func (t TxModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case error:
 		t.err = error(msg)
 		t.quit = true
-		return t, nil
+		return t, tea.Quit
 	default:
 		if !t.quit {
 			var cmd tea.Cmd
@@ -85,11 +85,11 @@ func (t TxModel) View() string {
 		Foreground(lipgloss.Color("#353C3B")).
 		Background(lipgloss.Color("#E3BD2D")).MarginLeft(1).Render("m8")
 	fileType := barStyle.Copy().Bold(true).
-		Background(lipgloss.Color("#01A299")).Render("exec")
+		Background(lipgloss.Color("#01A299")).Render("json")
 	cfgPathVal := barStyle.Copy().
 		Bold(true).
 		Width(101 - lipgloss.Width(m8Text) - lipgloss.Width(fileType)).
-		Render("")
+		Render("transaction lookup")
 
 	barText := lipgloss.JoinHorizontal(lipgloss.Top,
 		m8Text,
@@ -101,7 +101,7 @@ func (t TxModel) View() string {
 	if t.tx != nil {
 		v, err := json.MarshalIndent(t.tx, "", "\t")
 		if err != nil {
-			return err.Error()
+			t.err = err
 		}
 		output = string(v)
 	}

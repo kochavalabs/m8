@@ -1,8 +1,6 @@
 package tui
 
 import (
-	"fmt"
-
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/kochavalabs/m8/internal/cfg"
@@ -109,7 +107,6 @@ func CfgShow(cfg *cfg.Configuration, path string) CfgCmd {
 	return func() tea.Msg {
 		cfgYaml, err := yaml.Marshal(cfg)
 		if err != nil {
-			fmt.Println(err.Error())
 			return err
 		}
 		return &cfgMsg{

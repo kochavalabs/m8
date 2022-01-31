@@ -13,7 +13,7 @@ const (
 var (
 	barStyle = lipgloss.NewStyle().
 		Bold(true).
-		Foreground(lipgloss.AdaptiveColor{Light: "#FFFFFF", Dark: "#FFFFFF"}).
-		Background(lipgloss.AdaptiveColor{Light: "#353C3B", Dark: "#353C3B"}).
+		Foreground(lipgloss.AdaptiveColor{Light: white, Dark: white}).
+		Background(lipgloss.AdaptiveColor{Light: darkGrey, Dark: darkGrey}).
 		Padding(0, 1, 0, 1).Align(lipgloss.Center)
 )

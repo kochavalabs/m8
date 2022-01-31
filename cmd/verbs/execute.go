@@ -50,6 +50,7 @@ func execTx() *cobra.Command {
 			if err != nil {
 				return err
 			}
+
 			xdrArgs := make([]xdr.Argument, 0, 0)
 			values := viper.GetStringSlice(arguments)
 			for _, a := range values {
@@ -82,8 +83,7 @@ func execTx() *cobra.Command {
 	execTx.Flags().String(function, "", "the function to be called")
 	execTx.MarkFlagRequired(function)
 
-	execTx.Flags().StringSlice(arguments, []string{""}, "the args to pass within the function")
-
+	execTx.Flags().StringArray(arguments, []string{""}, "the args to pass within the function")
 	return execTx
 }
 
