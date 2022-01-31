@@ -117,14 +117,11 @@ func (t TxModel) View() string {
 	if t.err != nil {
 		output = t.err.Error() + "\n"
 	}
-	// Note: you could further customize the time output by getting the
-	// duration from m.stopwatch.Elapsed(), which returns a time.Duration, and
-	// skip m.stopwatch.View() altogether.
 
-	s := t.stopwatch.View()
-	s = "Elapsed: " + s + "\n"
+	sw := t.stopwatch.View()
+	sw = "Elapsed: " + sw + "\n"
 
-	return lipgloss.JoinVertical(lipgloss.Top, barText, output, s)
+	return lipgloss.JoinVertical(lipgloss.Top, barText, output, sw)
 }
 
 func TxLookup(ctx context.Context, client mazzaroth.Client, channelId string, transactionId string) TxCmd {

@@ -1,4 +1,6 @@
+package tui
 
+import tea "github.com/charmbracelet/bubbletea"
 
 var _ tea.Model = &ManifestModel{}
 
