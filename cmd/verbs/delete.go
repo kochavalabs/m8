@@ -1,10 +1,9 @@
 package verbs
 
 import (
-	"encoding/hex"
-	"fmt"
-
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/kochavalabs/crypto"
+	"github.com/kochavalabs/m8/internal/tui"
 	"github.com/kochavalabs/mazzaroth-go"
 	"github.com/kochavalabs/mazzaroth-xdr/go-xdr/xdr"
 	"github.com/spf13/cobra"
@@ -36,7 +35,7 @@ func deleteChannel() *cobra.Command {
 				return err
 			}
 
-			channelId, err := xdr.IDFromHexString(viper.GetString(channelId))
+			cId, err := xdr.IDFromHexString(viper.GetString(channelId))
 			if err != nil {
 				return err
 			}
@@ -46,17 +45,24 @@ func deleteChannel() *cobra.Command {
 				return err
 			}
 
-			tx, err := mazzaroth.Transaction(sender, channelId).Contract(mazzaroth.GenerateNonce(), maxBlockExpirationRange).Delete().Sign(pk)
+			blockHeight, err := client.BlockHeight(cmd.Context(), viper.GetString(channelId))
 			if err != nil {
 				return err
 			}
 
-			id, _, err := client.TransactionSubmit(cmd.Context(), tx)
+			tx, err := mazzaroth.Transaction(sender, cId).
+				Contract(mazzaroth.GenerateNonce(), blockHeight.Height+maxBlockExpirationRange).
+				Delete().Sign(pk)
 			if err != nil {
 				return err
 			}
 
-			fmt.Println("transaction id:", hex.EncodeToString(id[:]))
+			channelCmd := tui.ChannelDelete(cmd.Context(), client, tx)
+			channelModel := tui.NewChannelModel(channelCmd)
+
+			if err := tea.NewProgram(channelModel).Start(); err != nil {
+				return err
+			}
 			return nil
 		},
 	}

@@ -3,6 +3,7 @@ package tui
 import (
 	"context"
 	"encoding/hex"
+	"errors"
 	"time"
 
 	"github.com/charmbracelet/bubbles/stopwatch"
@@ -109,10 +110,26 @@ func (c ChannelModel) View() string {
 
 func ChannelDelete(ctx context.Context, client mazzaroth.Client, tx *xdr.Transaction) ChannelCmd {
 	return func() tea.Msg {
-		id, _, err := client.TransactionSubmit(ctx, tx)
-		if err != nil {
-			return err
+		if tx.Data.Category.Type == xdr.CategoryTypeDELETE {
+			id, _, err := client.TransactionSubmit(ctx, tx)
+			if err != nil {
+				return err
+			}
+			return id
 		}
-		return id
+		return errors.New("invalid trnasaction type supplied to delete cmd")
+	}
+}
+
+func ChannelPause(ctx context.Context, client mazzaroth.Client, tx *xdr.Transaction) ChannelCmd {
+	return func() tea.Msg {
+		if tx.Data.Category.Type == xdr.CategoryTypePAUSE {
+			id, _, err := client.TransactionSubmit(ctx, tx)
+			if err != nil {
+				return err
+			}
+			return id
+		}
+		return errors.New("invalid transaction type supplied to pause cmd")
 	}
 }

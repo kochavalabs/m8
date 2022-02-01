@@ -62,10 +62,10 @@ func pauseChannel() *cobra.Command {
 				return err
 			}
 
-			txCmd := tui.TxCall(cmd.Context(), client, tx)
-			txModel := tui.NewTxModel(txCmd)
+			channelCmd := tui.ChannelPause(cmd.Context(), client, tx)
+			channelModel := tui.NewChannelModel(channelCmd)
 
-			if err := tea.NewProgram(txModel).Start(); err != nil {
+			if err := tea.NewProgram(channelModel).Start(); err != nil {
 				return err
 			}
 			return nil
