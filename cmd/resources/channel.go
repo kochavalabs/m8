@@ -1,7 +1,6 @@
 package resources
 
 import (
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"os"
@@ -10,7 +9,6 @@ import (
 	"github.com/kochavalabs/m8/cmd/verbs"
 	"github.com/kochavalabs/m8/internal/manifest"
 	"github.com/kochavalabs/mazzaroth-go"
-	"github.com/kochavalabs/mazzaroth-xdr/go-xdr/xdr"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -39,46 +37,6 @@ func ChannelCmdChain() *cobra.Command {
 			// TODO
 			// self signed cert for channel
 			// mazzaroth.io cert generate for channel
-			return nil
-		},
-	}
-
-	channelDeleteCmd := &cobra.Command{
-		Use:   "delete",
-		Short: "delete a channel contract",
-		RunE: func(cmd *cobra.Command, args []string) error {
-
-			sender, err := xdr.IDFromHexString(viper.GetString(publicKey))
-			if err != nil {
-				return err
-			}
-
-			channelId, err := xdr.IDFromHexString(viper.GetString(channelId))
-			if err != nil {
-				return err
-			}
-
-			pk, err := crypto.FromHex(viper.GetString(privateKey))
-			if err != nil {
-				return err
-			}
-
-			tx, err := mazzaroth.Transaction(sender, channelId).Contract(mazzaroth.GenerateNonce(), maxBlockExpirationRange).Delete().Sign(pk)
-			if err != nil {
-				return err
-			}
-
-			client, err := mazzaroth.NewMazzarothClient(mazzaroth.WithAddress(viper.GetString(channelAddress)))
-			if err != nil {
-				return err
-			}
-
-			id, _, err := client.TransactionSubmit(cmd.Context(), tx)
-			if err != nil {
-				return err
-			}
-
-			fmt.Println("transaction id:", hex.EncodeToString(id[:]))
 			return nil
 		},
 	}
@@ -153,7 +111,6 @@ func ChannelCmdChain() *cobra.Command {
 
 	channelRootCmd.AddCommand(
 		channelGenCmd,
-		channelDeleteCmd,
 		channelDeployCmd,
 		channelTestCmd,
 		verbs.Lookup("channel"),

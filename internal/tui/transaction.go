@@ -2,6 +2,7 @@ package tui
 
 import (
 	"context"
+	"encoding/hex"
 	"encoding/json"
 	"time"
 
@@ -55,6 +56,7 @@ func (t TxModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case *xdr.ID:
 		t.id = msg
 		t.quit = true
+		// TODO look up receipt
 		return t, tea.Quit
 	case *xdr.Receipt:
 		t.rcpt = msg
@@ -89,7 +91,7 @@ func (t TxModel) View() string {
 	cfgPathVal := barStyle.Copy().
 		Bold(true).
 		Width(101 - lipgloss.Width(m8Text) - lipgloss.Width(fileType)).
-		Render("transaction lookup")
+		Render("transaction")
 
 	barText := lipgloss.JoinHorizontal(lipgloss.Top,
 		m8Text,
@@ -99,15 +101,19 @@ func (t TxModel) View() string {
 
 	output := ""
 	if t.tx != nil {
-		v, err := json.MarshalIndent(t.tx, "", "\t")
+		v, err := json.MarshalIndent(t.tx, "", " ")
 		if err != nil {
 			t.err = err
 		}
 		output = string(v)
 	}
 
+	if t.id != nil {
+		output = hex.EncodeToString(t.id[:])
+	}
+
 	if t.rcpt != nil {
-		v, err := json.MarshalIndent(t.rcpt, "", "\t")
+		v, err := json.MarshalIndent(t.rcpt, "", " ")
 		if err != nil {
 			return err.Error()
 		}

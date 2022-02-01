@@ -61,7 +61,7 @@ func lookupAbi() *cobra.Command {
 				return err
 			}
 
-			v, err := json.MarshalIndent(abi, "", "\t")
+			v, err := json.MarshalIndent(abi, "", " ")
 			if err != nil {
 				return err
 			}
@@ -89,7 +89,7 @@ func lookupBlockHeight() *cobra.Command {
 				return err
 			}
 
-			v, err := json.MarshalIndent(height, "", "\t")
+			v, err := json.MarshalIndent(height, "", " ")
 			if err != nil {
 				return err
 			}
@@ -120,7 +120,7 @@ func lookupBlock() *cobra.Command {
 					return err
 				}
 
-				v, err := json.MarshalIndent(blockheader, "", "\t")
+				v, err := json.MarshalIndent(blockheader, "", " ")
 				if err != nil {
 					return err
 				}
@@ -135,7 +135,7 @@ func lookupBlock() *cobra.Command {
 					return err
 				}
 
-				v, err := json.MarshalIndent(block, "", "\t")
+				v, err := json.MarshalIndent(block, "", " ")
 				if err != nil {
 					return err
 				}

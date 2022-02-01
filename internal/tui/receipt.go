@@ -77,7 +77,7 @@ func (r RcptModel) View() string {
 	cfgPathVal := barStyle.Copy().
 		Bold(true).
 		Width(101 - lipgloss.Width(m8Text) - lipgloss.Width(fileType)).
-		Render("receipt lookup")
+		Render("receipt")
 
 	barText := lipgloss.JoinHorizontal(lipgloss.Top,
 		m8Text,
@@ -87,7 +87,7 @@ func (r RcptModel) View() string {
 
 	output := ""
 	if r.rcpt != nil {
-		v, err := json.MarshalIndent(r.rcpt, "", "\t")
+		v, err := json.MarshalIndent(r.rcpt, "", " ")
 		if err != nil {
 			r.err = err
 		}
