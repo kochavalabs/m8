@@ -1,4 +1,4 @@
-package verbs
+package channel
 
 import (
 	"errors"
@@ -27,7 +27,7 @@ const (
 	defaultTestManifestPath       = `./m8/test.yaml`
 )
 
-func Exec() *cobra.Command {
+func exec() *cobra.Command {
 	exec := &cobra.Command{
 		Use:   "exec",
 		Short: "preform executions against a mazzaroth channel",

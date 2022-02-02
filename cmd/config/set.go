@@ -1,4 +1,4 @@
-package verbs
+package config
 
 import (
 	"errors"
@@ -10,9 +10,10 @@ import (
 
 const (
 	channelAlias = `channel-alias`
+	cfgPath      = `cfg-path`
 )
 
-func Set() *cobra.Command {
+func set() *cobra.Command {
 	set := &cobra.Command{
 		Use:   "set",
 		Short: "set values in the mazzaroth config",

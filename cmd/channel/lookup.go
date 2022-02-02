@@ -1,4 +1,4 @@
-package verbs
+package channel
 
 import (
 	"encoding/json"
@@ -19,25 +19,19 @@ const (
 	blockid        = `block-id`
 )
 
-func Lookup(resource string) *cobra.Command {
+func lookup() *cobra.Command {
 	lookup := &cobra.Command{
 		Use:   "lookup",
 		Short: "look up items on a mazzaroth node",
 	}
-	// sub command chain by resource type
-	switch resource {
-	case "channel":
-		lookup.AddCommand(lookupAbi(), lookupBlock(), lookupTx(), lookupReceipt())
-		return lookup
-	default:
-		return lookup
-	}
+	lookup.AddCommand(lookupAbi(), lookupBlock(), lookupTx(), lookupReceipt())
+	return lookup
 }
 
 func lookupAbi() *cobra.Command {
 	abi := &cobra.Command{
 		Use:   "abi",
-		Short: "return the application binary interfacem (ABI) for a channel",
+		Short: "return the application binary interface (ABI) for a channel",
 		RunE: func(cmd *cobra.Command, args []string) error {
 
 			client, err := mazzaroth.NewMazzarothClient(mazzaroth.WithAddress(viper.GetString(channelAddress)))

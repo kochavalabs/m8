@@ -5,8 +5,8 @@ import (
 	"errors"
 	"os"
 
-	"github.com/kochavalabs/m8/cmd/resources"
-	"github.com/kochavalabs/m8/cmd/verbs"
+	"github.com/kochavalabs/m8/cmd/channel"
+	"github.com/kochavalabs/m8/cmd/config"
 	"github.com/kochavalabs/m8/internal/cfg"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -68,10 +68,12 @@ func Execute() error {
 	}
 
 	rootCmd.AddCommand(
-		verbs.Init(),
-		verbs.Show(),
-		resources.ChannelCmdChain(),
-		resources.ConfigurationCmdChain())
+		initialize(),
+		show(),
+		pause(),
+		delete(),
+		channel.ChannelCmdChain(),
+		config.ConfigurationCmdChain())
 
 	dir, err := os.UserHomeDir()
 	if err != nil {
@@ -79,6 +81,8 @@ func Execute() error {
 	}
 
 	rootCmd.PersistentFlags().String(cfgPath, dir+cfgDir+cfgName, "location of the mazzaroth config file")
+	rootCmd.PersistentFlags().String(channelId, "", "defaults to the active channel id in the cfg")
+	rootCmd.PersistentFlags().String(channelAddress, "", "defaults to active channel address in the cfg")
 
 	ctx, cancel := context.WithCancel(context.Background())
 	errGrp, errctx := errgroup.WithContext(ctx)

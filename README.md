@@ -1,4 +1,4 @@
-## m8 
+# m8 
 ## Pronounced: m-ate 
 ---
 
@@ -13,11 +13,11 @@ m8 follows the following syntax to run commands from your terminal:
 m8 [resource] [verb] [noun] [flags]
 ```
 
-where `resource`, `verb`, `noun`, and `flags are: 
+where `resource`, `verb`, `noun`, and `flags` are: 
 
 - todo
 - holder
 
 **Flags that you specify from the command line override default values and any correspoding environemnt variables**
 
-If you need help, run `m8 help` from your terminal. 
+If you need help, run `m8 help` from your terminal.

@@ -1,4 +1,4 @@
-package verbs
+package cmd
 
 import (
 	"errors"
@@ -10,11 +10,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-const (
-	cfgPath = `cfg-path`
-)
-
-func Show() *cobra.Command {
+func show() *cobra.Command {
 	show := &cobra.Command{
 		Use:   "show",
 		Short: "show resources",

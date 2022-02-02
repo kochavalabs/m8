@@ -1,4 +1,4 @@
-package verbs
+package cmd
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
@@ -10,11 +10,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-const (
-	pause = `pause`
-)
-
-func Pause() *cobra.Command {
+func pause() *cobra.Command {
 	pause := &cobra.Command{
 		Use:   "pause",
 		Short: "pause transaction going to a mazzaroth channel",
@@ -56,7 +52,7 @@ func pauseChannel() *cobra.Command {
 
 			tx, err := mazzaroth.Transaction(sender, cId).
 				Contract(mazzaroth.GenerateNonce(), blockHeight.Height+maxBlockExpirationRange).
-				Pause(viper.GetBool(pause)).
+				Pause(viper.GetBool(pausechannel)).
 				Sign(pk)
 			if err != nil {
 				return err
@@ -71,6 +67,6 @@ func pauseChannel() *cobra.Command {
 			return nil
 		},
 	}
-	pauseChannel.Flags().Bool(pause, false, "pause transactions from being sent")
+	pauseChannel.Flags().Bool(pausechannel, false, "pause transactions from being sent")
 	return pauseChannel
 }

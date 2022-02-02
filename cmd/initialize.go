@@ -1,4 +1,4 @@
-package verbs
+package cmd
 
 import (
 	"errors"
@@ -9,21 +9,16 @@ import (
 
 	"github.com/kochavalabs/crypto"
 	"github.com/kochavalabs/m8/internal/cfg"
+	"github.com/kochavalabs/m8/internal/tui"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-const (
-	version       = `0.0.1`
-	pubKeyLength  = 32
-	privKeylength = 64
-)
-
-func Init() *cobra.Command {
+func initialize() *cobra.Command {
 	init := &cobra.Command{
 		Use:   "init",
-		Short: "initalize resources",
+		Short: "initialize resources",
 	}
 	init.AddCommand(initCfg())
 	return init
@@ -32,7 +27,7 @@ func Init() *cobra.Command {
 func initCfg() *cobra.Command {
 	initCfg := &cobra.Command{
 		Use:   "cfg",
-		Short: "Initalize the mazzaroth cli configuration and preferences",
+		Short: "initialize the mazzaroth cli configuration and preferences",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			// Bind Cobra flags with viper
 			if err := viper.BindPFlags(cmd.Flags()); err != nil {
@@ -163,7 +158,7 @@ func initCfg() *cobra.Command {
 			switch strings.ToLower(addChannel) {
 			case "n":
 			default: // default case is y
-				channelCfg, err := channelPrompt()
+				channelCfg, err := tui.ChannelPrompt()
 				if err != nil {
 					return err
 				}
@@ -186,7 +181,7 @@ func initCfg() *cobra.Command {
 func initChannel() *cobra.Command {
 	initChannel := &cobra.Command{
 		Use:   "channel",
-		Short: "initalize a mazzaroth channel",
+		Short: "initialize a mazzaroth channel",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// Generate Key
 			pub, priv, err := crypto.GenerateEd25519KeyPair()

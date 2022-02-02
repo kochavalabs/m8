@@ -1,4 +1,4 @@
-package verbs
+package channel
 
 import (
 	"encoding/json"
@@ -15,7 +15,7 @@ const (
 	number  = `number`
 )
 
-func List() *cobra.Command {
+func list() *cobra.Command {
 	list := &cobra.Command{
 		Use:   "list",
 		Short: "list items for a given mazzaroth channel",

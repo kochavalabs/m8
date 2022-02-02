@@ -1,4 +1,4 @@
-package verbs
+package cmd
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func Delete(resource string) *cobra.Command {
+func delete() *cobra.Command {
 	delete := &cobra.Command{
 		Use:   "delete",
 		Short: "delete resources on a mazzaroth node",
