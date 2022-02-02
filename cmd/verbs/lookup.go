@@ -11,18 +11,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-// lookup
-// blockheight
-// block
-// tx
-// receipt
-
 const (
-	gold     = `#E3BD2D`
-	darkGrey = `#353C3B`
-	teal     = `#01A299`
-	white    = `#FFFFFF`
-
 	transactionId  = `tx-id`
 	channelAddress = `channel-address`
 	channelId      = `channel-id`

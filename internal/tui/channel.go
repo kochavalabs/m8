@@ -3,6 +3,7 @@ package tui
 import (
 	"context"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"time"
 
@@ -19,6 +20,7 @@ type ChannelModel struct {
 	stopwatch stopwatch.Model
 	cmd       tea.Cmd
 	id        *xdr.ID
+	abi       *xdr.Abi
 	err       error
 
 	quit bool
@@ -48,6 +50,10 @@ func (c ChannelModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case *xdr.ID:
 		c.id = msg
+		c.quit = true
+		return c, tea.Quit
+	case *xdr.Abi:
+		c.abi = msg
 		c.quit = true
 		return c, tea.Quit
 	case error:
@@ -90,9 +96,14 @@ func (c ChannelModel) View() string {
 	output := ""
 	if c.id != nil {
 		output = hex.EncodeToString(c.id[:])
-	}
-
-	if c.err != nil {
+	} else if c.abi != nil {
+		v, err := json.MarshalIndent(c.abi, "", " ")
+		if err != nil {
+			c.err = err
+		} else {
+			output = string(v)
+		}
+	} else if c.err != nil {
 		errText := lipgloss.NewStyle().
 			Bold(true).
 			Width(100).
@@ -131,5 +142,15 @@ func ChannelPause(ctx context.Context, client mazzaroth.Client, tx *xdr.Transact
 			return id
 		}
 		return errors.New("invalid transaction type supplied to pause cmd")
+	}
+}
+
+func ChannelAbiLookup(ctx context.Context, client mazzaroth.Client, channelId string) ChannelCmd {
+	return func() tea.Msg {
+		abi, err := client.ChannelAbi(ctx, channelId)
+		if err != nil {
+			return err
+		}
+		return abi
 	}
 }

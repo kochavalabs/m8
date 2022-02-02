@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/kochavalabs/m8/cmd/resources"
+	"github.com/kochavalabs/m8/cmd/verbs"
 	"github.com/kochavalabs/m8/internal/cfg"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -66,8 +67,11 @@ func Execute() error {
 		},
 	}
 
-	rootCmd.AddCommand(resources.ChannelCmdChain())
-	rootCmd.AddCommand(resources.ConfigurationCmdChain())
+	rootCmd.AddCommand(
+		verbs.Init(),
+		verbs.Show(),
+		resources.ChannelCmdChain(),
+		resources.ConfigurationCmdChain())
 
 	dir, err := os.UserHomeDir()
 	if err != nil {

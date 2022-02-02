@@ -90,11 +90,10 @@ func (r RcptModel) View() string {
 		v, err := json.MarshalIndent(r.rcpt, "", " ")
 		if err != nil {
 			r.err = err
+		} else {
+			output = string(v)
 		}
-		output = string(v)
-	}
-
-	if r.err != nil {
+	} else if r.err != nil {
 		errText := lipgloss.NewStyle().
 			Bold(true).
 			Width(100).

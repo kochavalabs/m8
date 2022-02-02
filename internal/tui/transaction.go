@@ -106,21 +106,15 @@ func (t TxModel) View() string {
 			t.err = err
 		}
 		output = string(v)
-	}
-
-	if t.id != nil {
+	} else if t.id != nil {
 		output = hex.EncodeToString(t.id[:])
-	}
-
-	if t.rcpt != nil {
+	} else if t.rcpt != nil {
 		v, err := json.MarshalIndent(t.rcpt, "", " ")
 		if err != nil {
 			return err.Error()
 		}
 		output = string(v)
-	}
-
-	if t.err != nil {
+	} else if t.err != nil {
 		errText := lipgloss.NewStyle().
 			Bold(true).
 			Width(100).

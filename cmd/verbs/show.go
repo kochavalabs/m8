@@ -14,9 +14,18 @@ const (
 	cfgPath = `cfg-path`
 )
 
-func ShowCfg() *cobra.Command {
-	showCfg := &cobra.Command{
+func Show() *cobra.Command {
+	show := &cobra.Command{
 		Use:   "show",
+		Short: "show resources",
+	}
+	show.AddCommand(showCfg())
+	return show
+}
+
+func showCfg() *cobra.Command {
+	showCfg := &cobra.Command{
+		Use:   "cfg",
 		Short: "show the current m8 configuration",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cfg := viper.Get("cfg").(*cfg.Configuration)
