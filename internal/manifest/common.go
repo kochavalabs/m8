@@ -12,6 +12,10 @@ type GatewayNode struct {
 	Address string `yaml:"address,omitempty"`
 }
 
+type Tx struct {
+	Tx *Transaction `yaml:"tx"`
+}
+
 type Transaction struct {
 	Function string   `yaml:"function,omitempty"`
 	Args     []string `yaml:"args,omitempty"`

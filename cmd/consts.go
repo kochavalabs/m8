@@ -11,7 +11,7 @@ const (
 	defaultTestManifestPath       = `./m8/test.yaml`
 	defaultChannelId              = `0000000000000000000000000000000000000000000000000000000000000000`
 	defaultGatewayNodeAddress     = `http://localhost:6299`
-	defaultBlockExpirationNumber  = 5
+	maxBlockExpirationRange       = 100
 
 	// Flags/Env
 	// Environment variables are expected to be ALL CAPS
@@ -31,5 +31,5 @@ const (
 	arguments          = `args`
 	deploymentManifest = `deployment-manifest`
 	testManifest       = `test-manifest`
-	pause              = `pause`
+	pausechannel       = `pause`
 )

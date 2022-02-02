@@ -5,6 +5,8 @@ import (
 	"errors"
 	"os"
 
+	"github.com/kochavalabs/m8/cmd/channel"
+	"github.com/kochavalabs/m8/cmd/config"
 	"github.com/kochavalabs/m8/internal/cfg"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -28,16 +30,6 @@ func Execute() error {
 			if _, err := os.Stat(viper.GetString(cfgPath)); errors.Is(err, os.ErrNotExist) {
 				return errors.New(err.Error())
 			}
-
-			/*
-				viper.SetConfigType("yaml")
-				viper.SetConfigFile(viper.GetString(cfgPath))
-				err := viper.ReadInConfig()
-				if err != nil {
-					return err
-				}
-				fmt.Println(viper.AllKeys())
-			*/
 
 			config, err := cfg.FromFile(viper.GetString(cfgPath))
 			if err != nil {
@@ -75,8 +67,13 @@ func Execute() error {
 		},
 	}
 
-	rootCmd.AddCommand(channelCmdChain())
-	rootCmd.AddCommand(configurationCmdChain())
+	rootCmd.AddCommand(
+		initialize(),
+		show(),
+		pause(),
+		delete(),
+		channel.ChannelCmdChain(),
+		config.ConfigurationCmdChain())
 
 	dir, err := os.UserHomeDir()
 	if err != nil {
@@ -84,6 +81,8 @@ func Execute() error {
 	}
 
 	rootCmd.PersistentFlags().String(cfgPath, dir+cfgDir+cfgName, "location of the mazzaroth config file")
+	rootCmd.PersistentFlags().String(channelId, "", "defaults to the active channel id in the cfg")
+	rootCmd.PersistentFlags().String(channelAddress, "", "defaults to active channel address in the cfg")
 
 	ctx, cancel := context.WithCancel(context.Background())
 	errGrp, errctx := errgroup.WithContext(ctx)

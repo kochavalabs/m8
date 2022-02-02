@@ -9,21 +9,25 @@ import (
 
 	"github.com/kochavalabs/crypto"
 	"github.com/kochavalabs/m8/internal/cfg"
+	"github.com/kochavalabs/m8/internal/tui"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"gopkg.in/yaml.v2"
 )
 
-func configurationCmdChain() *cobra.Command {
-	cfgRootCmd := &cobra.Command{
-		Use:   "cfg",
-		Short: "mazzaroth cli configurations and preferences",
-	}
-
-	cfgInitCmd := &cobra.Command{
+func initialize() *cobra.Command {
+	init := &cobra.Command{
 		Use:   "init",
-		Short: "Initalize the mazzaroth cli configuration and preferences",
+		Short: "initialize resources",
+	}
+	init.AddCommand(initCfg())
+	return init
+}
+
+func initCfg() *cobra.Command {
+	initCfg := &cobra.Command{
+		Use:   "cfg",
+		Short: "initialize the mazzaroth cli configuration and preferences",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			// Bind Cobra flags with viper
 			if err := viper.BindPFlags(cmd.Flags()); err != nil {
@@ -154,7 +158,7 @@ func configurationCmdChain() *cobra.Command {
 			switch strings.ToLower(addChannel) {
 			case "n":
 			default: // default case is y
-				channelCfg, err := channelPrompt()
+				channelCfg, err := tui.ChannelPrompt()
 				if err != nil {
 					return err
 				}
@@ -171,136 +175,27 @@ func configurationCmdChain() *cobra.Command {
 			return nil
 		},
 	}
-
-	cfgShowCmd := &cobra.Command{
-		Use:   "show",
-		Short: "display the current cfg file",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			cfg := viper.Get("cfg").(*cfg.Configuration)
-			if cfg == nil {
-				return errors.New("missing configuration")
-			}
-			cfgYaml, err := yaml.Marshal(cfg)
-			if err != nil {
-				return err
-			}
-			fmt.Println(string(cfgYaml))
-			return nil
-		},
-	}
-
-	cfgSetCmd := &cobra.Command{
-		Use:   "set",
-		Short: "set or updates values in the mazzaroth cfg",
-	}
-
-	cfgSetChannelCmd := &cobra.Command{
-		Use:   "channel",
-		Short: "sets the active channel in the mazzaroth cfg",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			var config *cfg.Configuration
-			v := viper.Get("cfg")
-			if v != nil {
-				config = v.(*cfg.Configuration)
-			} else {
-				config = &cfg.Configuration{}
-			}
-			if ok := config.ContainsChannel("", viper.GetString(channelAlias)); !ok {
-				return errors.New("no channel with the supplied channel alias found")
-			}
-			config.User.ActiveChannel = viper.GetString(channelAlias)
-
-			cfg.ToFile(viper.GetString(cfgPath), config)
-
-			return nil
-		},
-	}
-	cfgSetChannelCmd.Flags().String(channelAlias, "", "channel alias for the channel to set as active")
-	cfgSetChannelCmd.MarkFlagRequired(channelAlias)
-
-	cfgAddCmd := &cobra.Command{
-		Use:   "add",
-		Short: "add elements to the mazzaroth cli cfg",
-	}
-
-	cfgAddChannelCmd := &cobra.Command{
-		Use:   "channel",
-		Short: "add a channel to the mazzaroth cli",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			var config *cfg.Configuration
-			v := viper.Get("cfg")
-			if v != nil {
-				config = v.(*cfg.Configuration)
-			} else {
-				config = &cfg.Configuration{}
-			}
-			fmt.Println(config)
-			fmt.Println(config.User.ActiveChannel)
-			channelCfg, err := channelPrompt()
-			if err != nil {
-				return err
-			}
-
-			if config.ContainsChannel(channelCfg.Channel.ChannelID, channelCfg.Channel.ChannelAlias) {
-				return errors.New("channel already exists with the same id or alias")
-			}
-
-			config.Channels = append(config.Channels, channelCfg)
-			cfg.ToFile(viper.GetString(cfgPath), config)
-			return nil
-		},
-	}
-
-	cfgSetCmd.AddCommand(cfgSetChannelCmd)
-	cfgAddCmd.AddCommand(cfgAddChannelCmd)
-	cfgRootCmd.AddCommand(cfgInitCmd, cfgShowCmd, cfgSetCmd, cfgAddCmd)
-	return cfgRootCmd
+	return initCfg
 }
 
-func channelPrompt() (*cfg.ChannelCfg, error) {
-	channelAliasPrompt := promptui.Prompt{
-		Label:   "Channel Alias",
-		Default: "default-channel",
-	}
-	alias, err := channelAliasPrompt.Run()
-	if err != nil {
-		return nil, err
-	}
-	channelIDPrompt := promptui.Prompt{
-		Label: "Channel id",
-		Validate: func(input string) error {
-			pub, err := crypto.FromHex(input)
+func initChannel() *cobra.Command {
+	initChannel := &cobra.Command{
+		Use:   "channel",
+		Short: "initialize a mazzaroth channel",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// Generate Key
+			pub, priv, err := crypto.GenerateEd25519KeyPair()
 			if err != nil {
 				return err
 			}
-			if len(pub) != channelIdLength {
-				return errors.New("invalid channel id length")
-			}
+			fmt.Println("channel address:", crypto.ToHex(pub))
+			fmt.Println("channel private key:", crypto.ToHex(priv))
+			fmt.Println("channel Id:", crypto.ToHex(pub))
+			// TODO
+			// self signed cert for channel
+			// mazzaroth.io cert generate for channel
 			return nil
 		},
-		Default: defaultChannelId,
 	}
-	id, err := channelIDPrompt.Run()
-	if err != nil {
-		return nil, err
-	}
-
-	channelAddrPrompt := promptui.Prompt{
-		Label:   "Channel Address",
-		Default: defaultGatewayNodeAddress,
-	}
-
-	addr, err := channelAddrPrompt.Run()
-	if err != nil {
-		return nil, err
-	}
-
-	channelCfg := &cfg.ChannelCfg{
-		Channel: &cfg.Channel{
-			ChannelAddress: addr,
-			ChannelID:      id,
-			ChannelAlias:   alias,
-		},
-	}
-	return channelCfg, nil
+	return initChannel
 }
