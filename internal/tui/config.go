@@ -26,6 +26,7 @@ type CfgModel struct {
 func NewCfgModel(cfgCmd CfgCmd) *CfgModel {
 	return &CfgModel{
 		cmd: tea.Cmd(cfgCmd),
+		cfg: &cfgMsg{},
 	}
 }
 

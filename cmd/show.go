@@ -28,7 +28,6 @@ func showCfg() *cobra.Command {
 			if cfg == nil {
 				return errors.New("missing configuration")
 			}
-
 			cfgCmd := tui.CfgShow(cfg, viper.GetString(cfgPath))
 			cfgModel := tui.NewCfgModel(cfgCmd)
 
