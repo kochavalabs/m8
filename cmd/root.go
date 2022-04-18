@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 
+	"github.com/elewis787/boa"
 	"github.com/kochavalabs/m8/cmd/channel"
 	"github.com/kochavalabs/m8/cmd/config"
 	"github.com/kochavalabs/m8/internal/cfg"
@@ -79,7 +80,8 @@ func Execute() error {
 	if err != nil {
 		return err
 	}
-
+	rootCmd.SetHelpFunc(boa.HelpFunc)
+	rootCmd.SetUsageFunc(boa.UsageFunc)
 	rootCmd.PersistentFlags().String(cfgPath, dir+cfgDir+cfgName, "location of the mazzaroth config file")
 	rootCmd.PersistentFlags().String(channelId, "", "defaults to the active channel id in the cfg")
 	rootCmd.PersistentFlags().String(channelAddress, "", "defaults to active channel address in the cfg")
