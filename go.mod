@@ -2,6 +2,8 @@ module github.com/kochavalabs/m8
 
 go 1.16
 
+replace github.com/elewis787/boa => ../../elewis787/boa
+
 require (
 	github.com/charmbracelet/bubbles v0.10.3
 	github.com/charmbracelet/bubbletea v0.20.0

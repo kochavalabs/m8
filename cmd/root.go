@@ -3,8 +3,10 @@ package cmd
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os"
 
+	"github.com/charmbracelet/lipgloss"
 	"github.com/elewis787/boa"
 	"github.com/kochavalabs/m8/cmd/channel"
 	"github.com/kochavalabs/m8/cmd/config"
@@ -80,6 +82,9 @@ func Execute() error {
 	if err != nil {
 		return err
 	}
+
+	boa.TitleStyle.BorderForeground(lipgloss.AdaptiveColor{Light: `#E3BD2D`, Dark: `#E3BD2D`})
+	boa.BorderStyle.BorderForeground(lipgloss.AdaptiveColor{Light: `#E3BD2D`, Dark: `#E3BD2D`})
 	rootCmd.SetHelpFunc(boa.HelpFunc)
 	rootCmd.SetUsageFunc(boa.UsageFunc)
 	rootCmd.PersistentFlags().String(cfgPath, dir+cfgDir+cfgName, "location of the mazzaroth config file")
@@ -90,6 +95,7 @@ func Execute() error {
 	errGrp, errctx := errgroup.WithContext(ctx)
 	errGrp.Go(func() error {
 		defer cancel()
+		fmt.Println(rootCmd.LocalFlags().FlagUsages())
 		if err := rootCmd.ExecuteContext(errctx); err != nil {
 			return err
 		}
