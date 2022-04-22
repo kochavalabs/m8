@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"errors"
-	"fmt"
 	"os"
 
 	"github.com/charmbracelet/lipgloss"
@@ -19,8 +18,10 @@ import (
 func Execute() error {
 	// root command entry to application
 	rootCmd := &cobra.Command{
-		Use:   "m8",
-		Short: "mazzaroth command line interface",
+		Use:     "m8",
+		Version: "v0.0.1",
+		Aliases: []string{"mazzaroth"},
+		Short:   "mazzaroth command line interface",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			// Bind Cobra flags with viper
 			if err := viper.BindPFlags(cmd.Flags()); err != nil {
@@ -82,9 +83,10 @@ func Execute() error {
 	if err != nil {
 		return err
 	}
-
 	boa.TitleStyle.BorderForeground(lipgloss.AdaptiveColor{Light: `#E3BD2D`, Dark: `#E3BD2D`})
 	boa.BorderStyle.BorderForeground(lipgloss.AdaptiveColor{Light: `#E3BD2D`, Dark: `#E3BD2D`})
+	boa.SelectedItemStyle.Foreground(lipgloss.AdaptiveColor{Light: `#353C3B`, Dark: `#353C3B`}).
+		Background(lipgloss.AdaptiveColor{Light: `#E3BD2D`, Dark: `#E3BD2D`})
 	rootCmd.SetHelpFunc(boa.HelpFunc)
 	rootCmd.SetUsageFunc(boa.UsageFunc)
 	rootCmd.PersistentFlags().String(cfgPath, dir+cfgDir+cfgName, "location of the mazzaroth config file")
@@ -95,7 +97,6 @@ func Execute() error {
 	errGrp, errctx := errgroup.WithContext(ctx)
 	errGrp.Go(func() error {
 		defer cancel()
-		fmt.Println(rootCmd.LocalFlags().FlagUsages())
 		if err := rootCmd.ExecuteContext(errctx); err != nil {
 			return err
 		}
