@@ -5,6 +5,8 @@ import (
 	"errors"
 	"os"
 
+	"github.com/charmbracelet/lipgloss"
+	"github.com/elewis787/boa"
 	"github.com/kochavalabs/m8/cmd/channel"
 	"github.com/kochavalabs/m8/cmd/config"
 	"github.com/kochavalabs/m8/internal/cfg"
@@ -16,8 +18,10 @@ import (
 func Execute() error {
 	// root command entry to application
 	rootCmd := &cobra.Command{
-		Use:   "m8",
-		Short: "mazzaroth command line interface",
+		Use:     "m8",
+		Version: "v0.0.1",
+		Aliases: []string{"mazzaroth"},
+		Short:   "mazzaroth command line interface",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			// Bind Cobra flags with viper
 			if err := viper.BindPFlags(cmd.Flags()); err != nil {
@@ -79,7 +83,12 @@ func Execute() error {
 	if err != nil {
 		return err
 	}
-
+	boa.TitleStyle.BorderForeground(lipgloss.AdaptiveColor{Light: `#E3BD2D`, Dark: `#E3BD2D`})
+	boa.BorderStyle.BorderForeground(lipgloss.AdaptiveColor{Light: `#E3BD2D`, Dark: `#E3BD2D`})
+	boa.SelectedItemStyle.Foreground(lipgloss.AdaptiveColor{Light: `#353C3B`, Dark: `#353C3B`}).
+		Background(lipgloss.AdaptiveColor{Light: `#E3BD2D`, Dark: `#E3BD2D`})
+	rootCmd.SetHelpFunc(boa.HelpFunc)
+	rootCmd.SetUsageFunc(boa.UsageFunc)
 	rootCmd.PersistentFlags().String(cfgPath, dir+cfgDir+cfgName, "location of the mazzaroth config file")
 	rootCmd.PersistentFlags().String(channelId, "", "defaults to the active channel id in the cfg")
 	rootCmd.PersistentFlags().String(channelAddress, "", "defaults to active channel address in the cfg")
