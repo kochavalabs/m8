@@ -83,12 +83,16 @@ func Execute() error {
 	if err != nil {
 		return err
 	}
-	boa.TitleStyle.BorderForeground(lipgloss.AdaptiveColor{Light: `#E3BD2D`, Dark: `#E3BD2D`})
-	boa.BorderStyle.BorderForeground(lipgloss.AdaptiveColor{Light: `#E3BD2D`, Dark: `#E3BD2D`})
-	boa.SelectedItemStyle.Foreground(lipgloss.AdaptiveColor{Light: `#353C3B`, Dark: `#353C3B`}).
+
+	styles := boa.DefaultStyles()
+	styles.Title.BorderForeground(lipgloss.AdaptiveColor{Light: `#E3BD2D`, Dark: `#E3BD2D`})
+	styles.Border.BorderForeground(lipgloss.AdaptiveColor{Light: `#E3BD2D`, Dark: `#E3BD2D`})
+	styles.SelectedItem.Foreground(lipgloss.AdaptiveColor{Light: `#353C3B`, Dark: `#353C3B`}).
 		Background(lipgloss.AdaptiveColor{Light: `#E3BD2D`, Dark: `#E3BD2D`})
-	rootCmd.SetHelpFunc(boa.HelpFunc)
-	rootCmd.SetUsageFunc(boa.UsageFunc)
+	b := boa.New(boa.WithAltScreen(true), boa.WithStyles(styles))
+
+	rootCmd.SetHelpFunc(b.HelpFunc)
+	rootCmd.SetUsageFunc(b.UsageFunc)
 	rootCmd.PersistentFlags().String(cfgPath, dir+cfgDir+cfgName, "location of the mazzaroth config file")
 	rootCmd.PersistentFlags().String(channelId, "", "defaults to the active channel id in the cfg")
 	rootCmd.PersistentFlags().String(channelAddress, "", "defaults to active channel address in the cfg")
