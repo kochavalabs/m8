@@ -9,10 +9,10 @@ However, you can specify other setting a env variable of `M8_CFG_PATH` or settin
 m8 follows the following syntax to run commands from your terminal:
 
 ```Bash
-m8 [resource] [verb] [noun] [flags]
+m8 root [verb] [noun]
 ```
 
-Where `resource` includes:
+Where roots may includes:
 
 - cfg - Commands involving the configuration of m8.
 - channel - Commands involving the interaction of a Mazzaroth channel.
